@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Muayad's Ironman Training Tracker</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;overscroll-behavior:none;}
+.page{display:none;}.page.active{display:block;}
+input,textarea,select{background:#1a1a1a;border:1px solid #2a2a2a;color:#fff;border-radius:10px;padding:10px 13px;width:100%;outline:none;font-size:15px;transition:border-color .2s;}
+input:focus,textarea:focus,select:focus{border-color:#1a9df1;}
+input[type=range]{accent-color:#1a9df1;background:transparent;padding:0;}
+input[type=checkbox]{accent-color:#1a9df1;width:20px;height:20px;cursor:pointer;}
+.btn{display:block;width:100%;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;transition:all .18s;}
+.btn-blue{background:#1a9df1;color:#fff;}.btn-blue:hover{background:#0d8ad9;transform:translateY(-1px);}
+.btn-ghost{background:#1a1a1a;color:#888;border:1px solid #2a2a2a;}.btn-ghost:hover{color:#fff;border-color:#444;}
+.card{background:#111;border:1px solid #1e1e1e;border-radius:20px;padding:16px;}
+.session-card{border-radius:16px;padding:14px;cursor:pointer;transition:all .18s;background:#151515;border:1px solid #222;}
+.session-card:hover{transform:translateY(-2px);border-color:#333;}
+.session-card.done{background:rgba(26,157,241,.07);border-color:rgba(26,157,241,.35);}
+.week-tab{border-radius:12px;padding:9px 0;font-size:13px;font-weight:700;cursor:pointer;transition:all .18s;text-align:center;}
+.week-tab.active{background:#1a9df1;color:#fff;}.week-tab.inactive{background:#1a1a1a;color:#666;}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;cursor:pointer;background:none;border:none;transition:color .18s;}
+.progress-fill{transition:width .6s ease;border-radius:9999px;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60;display:none;align-items:flex-end;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal-sheet{background:#0e0e0e;border-top:1px solid #2a2a2a;border-radius:24px 24px 0 0;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;padding:24px 20px 40px;}
+.toast{position:fixed;top:72px;left:50%;transform:translateX(-50%);z-index:99;border-radius:14px;padding:10px 22px;font-size:14px;font-weight:700;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.5);pointer-events:none;opacity:0;transition:opacity .25s;}
+.toast.show{opacity:1;}
+.watermark{position:fixed;bottom:90px;right:14px;color:#1a9df1;opacity:.13;font-size:11px;font-weight:800;letter-spacing:2px;pointer-events:none;z-index:50;writing-mode:vertical-lr;transform:rotate(180deg);}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn .3s ease both;}
+@keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.pop{animation:pop .28s ease both;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:2px;}
+/* ── Guide accordion ── */
+.acc-body{max-height:0;overflow:hidden;transition:max-height .38s cubic-bezier(.4,0,.2,1);}
+.acc-body.open{max-height:2400px;}
+.acc-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:14px 16px;border-radius:16px;transition:background .18s;}
+.acc-header:hover{background:rgba(255,255,255,.04);}
+.acc-chevron{transition:transform .3s;}
+.acc-chevron.open{transform:rotate(180deg);}
+.guide-pill{display:inline-block;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;}
+.guide-tip{border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.65;margin-bottom:10px;}
+.guide-step{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start;}
+.guide-step-num{width:24px;height:24px;border-radius:50%;background:#1a9df1;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.guide-table{width:100%;border-collapse:collapse;font-size:11px;}
+.guide-table th{background:#1a1a1a;color:#888;font-weight:700;padding:8px 10px;text-align:left;letter-spacing:.5px;text-transform:uppercase;font-size:10px;}
+.guide-table td{padding:9px 10px;border-bottom:1px solid #1a1a1a;vertical-align:top;line-height:1.5;}
+.guide-table tr:last-child td{border-bottom:none;}
+.guide-highlight{border-left:3px solid #1a9df1;padding:12px 14px;background:rgba(26,157,241,.07);border-radius:0 12px 12px 0;margin-bottom:10px;font-size:12px;line-height:1.65;}
+</style>
+</head>
+<body class="bg-black text-white min-h-screen">
+
+<!-- Watermark -->
+<div class="watermark">@muayadfit</div>
+
+<!-- Header -->
+<header style="position:fixed;top:0;left:0;right:0;z-index:40;background:rgba(0,0,0,.95);border-bottom:1px solid #161616;backdrop-filter:blur(12px);">
+  <div style="max-width:520px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div style="font-size:10px;color:#555;letter-spacing:2px;text-transform:uppercase;">Ironman Training</div>
+      <div style="font-size:16px;font-weight:900;color:#1a9df1;margin-top:1px;">Muayad Alabri</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="display:flex;align-items:center;gap:5px;">
+        <span style="font-size:16px;">🔥</span>
+        <span id="streakNum" style="font-size:15px;font-weight:800;color:#fff;">0</span>
+        <span style="font-size:11px;color:#555;">day streak</span>
+      </div>
+      <button onclick="confirmReset()" title="Reset data" style="background:none;border:none;color:#333;cursor:pointer;padding:4px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#333'">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Pages -->
+<main style="max-width:520px;margin:0 auto;padding:68px 16px 90px;">
+
+<!-- ═══════════════════════ DASHBOARD ═══════════════════════ -->
+<div id="page-dashboard" class="page active">
+
+  <!-- Profile card -->
+  <div style="background:linear-gradient(135deg,#071828,#0a2040);border:1px solid #1a3555;border-radius:22px;padding:18px;margin-top:8px;" class="fade-in">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div>
+        <div style="font-size:10px;color:#4a8ab5;letter-spacing:2px;text-transform:uppercase;">Athlete Profile</div>
+        <div style="font-size:20px;font-weight:900;margin-top:3px;">Muayad Alabri</div>
+        <div style="font-size:12px;color:#4a7fa5;margin-top:2px;">Complete Beginner → Ironman</div>
+      </div>
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(26,157,241,.15);border:2px solid #1a9df1;display:flex;align-items:center;justify-content:center;font-size:24px;">🏊</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+      <div style="background:rgba(255,255,255,.04);border-radius:12px;padding:10px;text-align:center;">
+        <div style="font-size:20px;font-weight:900;color:#1a9df1;">94</div>
+        <div style="font-size:10px;color:#556;">kg body weight</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border-radius:12px;padding:10px;text-align:center;">
+        <div style="font-size:20px;font-weight:900;color:#1a9df1;">174</div>
+        <div style="font-size:10px;color:#556;">cm height</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border-radius:12px;padding:10px;text-align:center;">
+        <div style="font-size:20px;font-weight:900;color:#1a9df1;">4</div>
+        <div style="font-size:10px;color:#556;">week program</div>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);border-radius:12px;padding:10px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:11px;color:#4a8ab5;">Daily Nutrition Targets</div>
+      <div style="display:flex;gap:14px;font-size:12px;">
+        <span><strong style="color:#fff;">2,400</strong> <span style="color:#556;">kcal</span></span>
+        <span><strong style="color:#fff;">200–230g</strong> <span style="color:#556;">protein</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Motivational banner -->
+  <div id="motiveBanner" style="background:linear-gradient(135deg,#0c1f0c,#0a2a0a);border:1px solid #1e3d1e;border-radius:18px;padding:14px;margin-top:10px;text-align:center;" class="fade-in">
+    <div style="font-size:22px;margin-bottom:4px;">💪</div>
+    <div id="motiveText" style="font-size:13px;font-weight:600;color:#6ec97e;line-height:1.5;"></div>
+  </div>
+
+  <!-- Today's Sessions -->
+  <div style="margin-top:16px;" class="fade-in">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="font-size:15px;font-weight:800;">Today's Sessions</div>
+      <div id="todayLabel" style="font-size:12px;color:#555;"></div>
+    </div>
+    <div id="todaySessions"></div>
+  </div>
+
+  <!-- Week progress -->
+  <div class="card fade-in" style="margin-top:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="font-size:14px;font-weight:700;">Week Progress</div>
+      <div id="weekLabel" style="font-size:12px;color:#1a9df1;font-weight:700;"></div>
+    </div>
+    <div style="height:10px;background:#1e1e1e;border-radius:9999px;overflow:hidden;">
+      <div id="weekBar" class="progress-fill" style="height:100%;background:linear-gradient(90deg,#1a9df1,#0dd1f1);width:0%;"></div>
+    </div>
+    <div id="weekBarText" style="font-size:12px;color:#555;margin-top:7px;"></div>
+  </div>
+
+  <!-- Nutrition Quick View -->
+  <div class="card fade-in" style="margin-top:10px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-size:14px;font-weight:700;">Today's Nutrition</div>
+      <button onclick="goTo('nutrition')" style="background:none;border:none;font-size:12px;color:#1a9df1;cursor:pointer;font-weight:700;">Log →</button>
+    </div>
+    <div id="nutQuick" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+  </div>
+
+</div><!-- /dashboard -->
+
+<!-- ═══════════════════════ SCHEDULE ═══════════════════════ -->
+<div id="page-schedule" class="page">
+  <div style="margin-top:8px;">
+    <div style="font-size:20px;font-weight:900;margin-bottom:2px;">4-Week Schedule</div>
+    <div style="font-size:13px;color:#555;margin-bottom:14px;">May 10 – June 6, 2026 · Tap any session to log it</div>
+    <div id="weekTabs" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:16px;"></div>
+    <div id="scheduleBody"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PROGRESS ═══════════════════════ -->
+<div id="page-progress" class="page">
+  <div style="margin-top:8px;">
+    <div style="font-size:20px;font-weight:900;margin-bottom:2px;">Progress</div>
+    <div style="font-size:13px;color:#555;margin-bottom:16px;">Your 4-week training overview</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;" id="totalsRow"></div>
+    <div class="card" style="margin-bottom:12px;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px;">Weekly Completion</div>
+      <div id="weekBars"></div>
+    </div>
+    <div class="card">
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Session History</div>
+      <div id="historyList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ NUTRITION ═══════════════════════ -->
+<div id="page-nutrition" class="page">
+  <div style="margin-top:8px;">
+    <div style="font-size:20px;font-weight:900;margin-bottom:2px;">Nutrition</div>
+    <div id="nutDateLabel" style="font-size:13px;color:#555;margin-bottom:16px;"></div>
+    <div style="background:linear-gradient(135deg,#071828,#0a2040);border:1px solid #1a3555;border-radius:20px;padding:16px;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:700;color:#5aabdb;margin-bottom:12px;">Daily Targets</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="background:rgba(255,255,255,.05);border-radius:14px;padding:14px;text-align:center;">
+          <div style="font-size:26px;font-weight:900;color:#1a9df1;">2,400</div>
+          <div style="font-size:11px;color:#4a8ab5;margin-top:2px;">Calories (kcal)</div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border-radius:14px;padding:14px;text-align:center;">
+          <div style="font-size:26px;font-weight:900;color:#1a9df1;">200–230</div>
+          <div style="font-size:11px;color:#4a8ab5;margin-top:2px;">Protein (g)</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px;">Log Today</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div>
+          <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">Calories consumed (kcal)</label>
+          <input type="number" id="nutCal" placeholder="e.g. 2200" min="0" max="6000" />
+        </div>
+        <div>
+          <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">Protein consumed (g)</label>
+          <input type="number" id="nutPro" placeholder="e.g. 205" min="0" max="600" />
+        </div>
+        <div>
+          <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">Notes (optional)</label>
+          <textarea id="nutNotes" rows="2" placeholder="Meal highlights, how eating felt…" style="resize:none;"></textarea>
+        </div>
+        <button class="btn btn-blue" onclick="saveNutrition()">Save Today's Log</button>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Recent Logs</div>
+      <div id="nutHistory"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ BEGINNER'S GUIDE ═══════════════════════ -->
+<div id="page-guide" class="page">
+  <div style="margin-top:8px;">
+    <div style="font-size:20px;font-weight:900;margin-bottom:2px;">Beginner's Guide</div>
+    <div style="font-size:13px;color:#555;margin-bottom:16px;">Your complete roadmap to starting strong</div>
+
+    <!-- ── General Intro ── -->
+    <div style="background:linear-gradient(135deg,#071828,#0a2040);border:1px solid #1a3555;border-radius:20px;padding:16px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="font-size:26px;">🎯</div>
+        <div>
+          <div style="font-size:15px;font-weight:900;">Welcome, Muayad!</div>
+          <div style="font-size:11px;color:#4a8ab5;margin-top:1px;">You are a complete beginner — and that's your greatest advantage.</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:#8ab6d6;line-height:1.7;margin-bottom:12px;">Being new means you have zero bad habits to unlearn. Every session is a gain. Every metre you swim, every kilometre you run, every minute in the saddle is building a foundation that will carry you across that Ironman finish line.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:rgba(255,255,255,.04);border-radius:12px;padding:10px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:3px;">⚡</div>
+          <div style="font-size:11px;font-weight:700;color:#fff;">Consistency</div>
+          <div style="font-size:10px;color:#555;margin-top:1px;">beats intensity every time</div>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border-radius:12px;padding:10px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:3px;">✅</div>
+          <div style="font-size:11px;font-weight:700;color:#fff;">Completion</div>
+          <div style="font-size:10px;color:#555;margin-top:1px;">beats perfection always</div>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border-radius:12px;padding:10px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:3px;">👂</div>
+          <div style="font-size:11px;font-weight:700;color:#fff;">Listen</div>
+          <div style="font-size:10px;color:#555;margin-top:1px;">to your body always</div>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border-radius:12px;padding:10px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:3px;">😴</div>
+          <div style="font-size:11px;font-weight:700;color:#fff;">Rest</div>
+          <div style="font-size:10px;color:#555;margin-top:1px;">is part of the training</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:10px;font-size:11px;color:#fca5a5;line-height:1.6;">
+        ⚠️ <strong>Safety first:</strong> Soreness is normal. Sharp or joint pain is not — stop and rest. Never skip a warm-up. If you feel unwell, skip the session; one missed session never hurt anyone.
+      </div>
+    </div>
+
+    <!-- ── Section 1: Running ── -->
+    <div class="card" style="margin-bottom:10px;padding:0;overflow:hidden;">
+      <div class="acc-header" id="acc-run-header" onclick="toggleAcc('run')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:12px;background:rgba(34,197,94,.15);display:flex;align-items:center;justify-content:center;font-size:20px;">🏃</div>
+          <div>
+            <div style="font-size:13px;font-weight:800;">1. Running</div>
+            <div style="font-size:11px;color:#555;margin-top:1px;">Run/walk method for complete beginners</div>
+          </div>
+        </div>
+        <svg class="acc-chevron" id="acc-run-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="acc-body" id="acc-run-body">
+        <div style="padding:0 16px 16px;">
+          <!-- Run/Walk Method -->
+          <div style="font-size:12px;font-weight:800;color:#22c55e;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">The Run/Walk Method</div>
+          <p style="font-size:12px;color:#888;line-height:1.65;margin-bottom:10px;">As a complete beginner, run/walk intervals are your best tool. Do not try to run continuously — it leads to injury and burnout. These intervals are exactly how elite coaches build every new runner.</p>
+          <div style="background:#1a1a1a;border-radius:14px;overflow:hidden;margin-bottom:12px;">
+            <div style="padding:10px 12px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;font-weight:700;color:#22c55e;">Week 1</span>
+              <span style="font-size:11px;color:#888;">Walk 2 min → Run 1 min · Repeat 5–6×</span>
+            </div>
+            <div style="padding:10px 12px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;font-weight:700;color:#22c55e;">Week 2</span>
+              <span style="font-size:11px;color:#888;">Walk 2 min → Run 2 min · Repeat 5–6×</span>
+            </div>
+            <div style="padding:10px 12px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;font-weight:700;color:#22c55e;">Week 3</span>
+              <span style="font-size:11px;color:#888;">Walk 1 min → Run 3 min · Repeat 4–5×</span>
+            </div>
+            <div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;font-weight:700;color:#22c55e;">Week 4</span>
+              <span style="font-size:11px;color:#888;">Walk 1 min → Run 5 min · Repeat 4–5×</span>
+            </div>
+          </div>
+          <!-- Form basics -->
+          <div style="font-size:12px;font-weight:800;color:#22c55e;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Form Basics</div>
+          <div class="guide-step"><div class="guide-step-num">1</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">Head up, eyes forward</strong> — look 10–15 m ahead, not at your feet. This opens your airway and keeps your posture upright.</div></div>
+          <div class="guide-step"><div class="guide-step-num">2</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">Relax your shoulders</strong> — drop them away from your ears. Tension here wastes energy and tires you out faster.</div></div>
+          <div class="guide-step"><div class="guide-step-num">3</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">Short, quick steps</strong> — aim for your foot landing under your hips, not out in front. Shorter strides reduce injury risk dramatically.</div></div>
+          <div class="guide-step" style="margin-bottom:14px;"><div class="guide-step-num">4</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">Arms at ~90°</strong> — drive elbows back (not across your body). Your arms set the pace for your legs.</div></div>
+          <!-- Safety -->
+          <div class="guide-tip" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);color:#86efac;">
+            ✅ <strong>Always warm up</strong> with 5 min brisk walking before your first run interval.<br>
+            ✅ <strong>Cool down</strong> with 5 min walking and gentle stretching after.<br>
+            ✅ <strong>Invest in proper running shoes</strong> — this is the single best investment you can make. Ask at a specialist running store for a gait analysis.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section 2: Swimming ── -->
+    <div class="card" style="margin-bottom:10px;padding:0;overflow:hidden;">
+      <div class="acc-header" id="acc-swim-header" onclick="toggleAcc('swim')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:12px;background:rgba(59,130,246,.15);display:flex;align-items:center;justify-content:center;font-size:20px;">🏊</div>
+          <div>
+            <div style="font-size:13px;font-weight:800;">2. Swimming</div>
+            <div style="font-size:11px;color:#555;margin-top:1px;">From 25 m to confident open-water swimmer</div>
+          </div>
+        </div>
+        <svg class="acc-chevron" id="acc-swim-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="acc-body" id="acc-swim-body">
+        <div style="padding:0 16px 16px;">
+          <div class="guide-tip" style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#93c5fd;">
+            🌊 <strong>25 metres feels impossible right now.</strong> That is completely normal and expected. Swimming is 80% technique and breathing — not fitness. Your fitness is already building through running and resistance. Focus on breathing first, distance second.
+          </div>
+          <!-- Week plan -->
+          <div style="font-size:12px;font-weight:800;color:#3b82f6;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Week-by-Week Plan</div>
+          <div style="background:#1a1a1a;border-radius:14px;overflow:hidden;margin-bottom:12px;">
+            <div style="padding:10px 12px;border-bottom:1px solid #222;">
+              <div style="font-size:11px;font-weight:700;color:#3b82f6;margin-bottom:3px;">Weeks 1 & 2</div>
+              <div style="font-size:11px;color:#888;line-height:1.6;">4–6 × 25 m with full rest (60–90 sec). Rest at the wall as long as you need — no shame. Target: 100–150 m total per session.</div>
+            </div>
+            <div style="padding:10px 12px;">
+              <div style="font-size:11px;font-weight:700;color:#3b82f6;margin-bottom:3px;">Weeks 3 & 4</div>
+              <div style="font-size:11px;color:#888;line-height:1.6;">4–6 × 50 m with 60 sec rest. Try 1–2 continuous 100 m sets. Target: 200–300 m total per session.</div>
+            </div>
+          </div>
+          <!-- Breathing -->
+          <div style="font-size:12px;font-weight:800;color:#3b82f6;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Breathing — The Key Skill</div>
+          <div class="guide-step"><div class="guide-step-num" style="background:#3b82f6;">1</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">Exhale underwater</strong> — blow air out through your nose and mouth while your face is in the water. Many beginners forget to exhale and then gasp when they turn.</div></div>
+          <div class="guide-step"><div class="guide-step-num" style="background:#3b82f6;">2</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">Breathe every 2–3 strokes</strong> — turn your head to the side (not up). Your ear stays in the water. Inhale quickly, face back down.</div></div>
+          <div class="guide-step" style="margin-bottom:14px;"><div class="guide-step-num" style="background:#3b82f6;">3</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">Don't fight the water</strong> — relax. Tension makes you sink. The water wants to support you if you let it.</div></div>
+          <!-- Drills -->
+          <div style="font-size:12px;font-weight:800;color:#3b82f6;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">3 Beginner Drills</div>
+          <div class="guide-tip" style="background:#1a1a1a;border:1px solid #222;color:#aaa;">
+            <strong style="color:#fff;">🦵 Kick with board:</strong> Hold a kickboard, focus only on your leg kick. Builds feel for propulsion.<br><br>
+            <strong style="color:#fff;">💪 Single-arm freestyle:</strong> One arm extended, stroke with the other. Slows everything down so you can feel your technique.<br><br>
+            <strong style="color:#fff;">🤲 Catch-up drill:</strong> Wait until the leading hand is fully extended before the other arm starts its stroke. Teaches timing and glide.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section 3: Cycling ── -->
+    <div class="card" style="margin-bottom:10px;padding:0;overflow:hidden;">
+      <div class="acc-header" id="acc-bike-header" onclick="toggleAcc('bike')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:12px;background:rgba(245,158,11,.15);display:flex;align-items:center;justify-content:center;font-size:20px;">🚴</div>
+          <div>
+            <div style="font-size:13px;font-weight:800;">3. Cycling</div>
+            <div style="font-size:11px;color:#555;margin-top:1px;">Gym bike now · Road bike July 2026</div>
+          </div>
+        </div>
+        <svg class="acc-chevron" id="acc-bike-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="acc-body" id="acc-bike-body">
+        <div style="padding:0 16px 16px;">
+
+          <!-- Roadmap banner -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+            <div style="background:rgba(26,157,241,.1);border:1px solid rgba(26,157,241,.3);border-radius:14px;padding:12px;text-align:center;">
+              <div style="font-size:20px;margin-bottom:4px;">🏋️</div>
+              <div style="font-size:11px;font-weight:800;color:#1a9df1;">Now</div>
+              <div style="font-size:10px;color:#555;margin-top:2px;line-height:1.5;">May 10 – Jun 6<br>Stationary gym bike</div>
+            </div>
+            <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:14px;padding:12px;text-align:center;">
+              <div style="font-size:20px;margin-bottom:4px;">🚴</div>
+              <div style="font-size:11px;font-weight:800;color:#f59e0b;">Next</div>
+              <div style="font-size:10px;color:#555;margin-top:2px;line-height:1.5;">July 2026<br>Outdoor road bike</div>
+            </div>
+          </div>
+
+          <!-- Gym bike section -->
+          <div style="font-size:12px;font-weight:800;color:#f59e0b;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Current Program: Indoor Gym Bike</div>
+          <p style="font-size:12px;color:#888;line-height:1.65;margin-bottom:10px;">For the entire 4-week program (May 10 – June 6, 2026), all cycling sessions are done <strong style="color:#fff;">indoors at the gym on a stationary bike.</strong> This is the perfect starting environment for a beginner — it's safe, fully controlled, and lets you focus entirely on building time in the saddle without worrying about traffic, road conditions, or balance on a new bike.</p>
+
+          <div class="guide-tip" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:#fcd34d;margin-bottom:14px;">
+            🎯 <strong>Your only job on the gym bike:</strong> build your legs and your aerobic engine. Use the bike's display to track your time, distance, and resistance level. Log everything in the app.
+          </div>
+
+          <!-- Bike fit on stationary -->
+          <div style="font-size:12px;font-weight:800;color:#f59e0b;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Bike Fit — Even on a Stationary Bike</div>
+          <p style="font-size:12px;color:#888;line-height:1.65;margin-bottom:10px;">Getting the setup right prevents knee pain and makes riding far more efficient. Spend 2 minutes adjusting before every session.</p>
+          <div class="guide-step"><div class="guide-step-num" style="background:#f59e0b;">1</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">Seat height:</strong> When your foot is at the bottom of the pedal stroke (6 o'clock position), your knee should have a slight bend — not fully straight and not deeply bent. Stand next to the bike: the seat should be at hip height.</div></div>
+          <div class="guide-step"><div class="guide-step-num" style="background:#f59e0b;">2</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">Handlebar height:</strong> Keep the bars high enough so you're not hunching over or straining your neck. For beginners, handlebar at or slightly above seat level is comfortable and safe.</div></div>
+          <div class="guide-step" style="margin-bottom:14px;"><div class="guide-step-num" style="background:#f59e0b;">3</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">Foot position:</strong> The ball of your foot (widest part) should be over the centre of the pedal. If the gym bike has toe cages, use them — they help prevent your foot from slipping.</div></div>
+
+          <!-- Easy endurance rides -->
+          <div style="font-size:12px;font-weight:800;color:#f59e0b;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Building Time in the Saddle</div>
+          <p style="font-size:12px;color:#888;line-height:1.65;margin-bottom:10px;">The goal for Weeks 3 and 4 is simple: <strong style="color:#fff;">easy, steady effort for longer periods.</strong> Resist the urge to push hard. Endurance is built at low-to-moderate intensity, not by going all-out.</p>
+          <div style="background:#1a1a1a;border-radius:14px;overflow:hidden;margin-bottom:14px;">
+            <div style="padding:10px 12px;border-bottom:1px solid #222;display:flex;gap:10px;align-items:flex-start;">
+              <span style="font-size:11px;font-weight:700;color:#f59e0b;white-space:nowrap;">Week 3 · Sat</span>
+              <span style="font-size:11px;color:#888;line-height:1.6;">First dedicated cycling session. <strong style="color:#ddd;">20–25 min easy.</strong> Set resistance to a light-to-moderate level. If you break a light sweat and can hold a conversation, you're at the perfect intensity.</span>
+            </div>
+            <div style="padding:10px 12px;display:flex;gap:10px;align-items:flex-start;">
+              <span style="font-size:11px;font-weight:700;color:#f59e0b;white-space:nowrap;">Week 4 · Sat</span>
+              <span style="font-size:11px;color:#888;line-height:1.6;"><strong style="color:#ddd;">25–30 min</strong> with 2–3 short "harder effort" intervals: pedal harder for 30 seconds, then easy for 2 minutes. Repeat 2–3 times within the session.</span>
+            </div>
+          </div>
+
+          <!-- Cadence -->
+          <div style="font-size:12px;font-weight:800;color:#f59e0b;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Cadence: 80–90 RPM</div>
+          <p style="font-size:12px;color:#888;line-height:1.65;margin-bottom:10px;">RPM = Revolutions Per Minute (how many times you complete a full pedal circle in one minute). <strong style="color:#fff;">Aim for 80–90 RPM</strong> — this is the sweet spot that protects your knees and builds cycling efficiency.</p>
+          <div class="guide-tip" style="background:#1a1a1a;border:1px solid #222;color:#aaa;margin-bottom:14px;">
+            <strong style="color:#fff;">How to check without an RPM display:</strong> Count how many times your right knee comes up in 15 seconds. Multiply by 4. That's your RPM. Aim for 20–23 counts in 15 seconds = 80–92 RPM. ✅
+          </div>
+
+          <!-- Intensity progression -->
+          <div style="font-size:12px;font-weight:800;color:#f59e0b;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Increasing Intensity Safely</div>
+          <div class="guide-step"><div class="guide-step-num" style="background:#f59e0b;">1</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">Increase duration before resistance.</strong> Add 5 minutes to your ride before you add more resistance. Always.</div></div>
+          <div class="guide-step"><div class="guide-step-num" style="background:#f59e0b;">2</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">Use short intervals.</strong> 30 seconds harder effort → 2 minutes easy recovery. Never go all-out for more than 30–45 seconds in these early weeks.</div></div>
+          <div class="guide-step" style="margin-bottom:14px;"><div class="guide-step-num" style="background:#f59e0b;">3</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">The 10% rule.</strong> Never increase your total cycling time by more than 10% per week. So if Week 3 is 25 min, Week 4 is maximum 27–28 min. Injuries almost always come from doing too much too soon.</div></div>
+
+          <!-- Road bike transition -->
+          <div style="font-size:12px;font-weight:800;color:#f59e0b;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">July 2026: Your Road Bike</div>
+          <p style="font-size:12px;color:#888;line-height:1.65;margin-bottom:10px;">Starting next month, we will get you a proper outdoor road bike so you can begin real-world cycling. Everything you build on the gym bike — your leg strength, your cadence habit, your cardiovascular base — transfers directly to the road.</p>
+          <div class="guide-tip" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:#fcd34d;margin-bottom:0;">
+            🛣️ When we move outdoors, we'll cover: road safety, gear shifting, cornering, climbing, and group riding etiquette. For now, every minute on the gym bike is an investment in that future version of you.
+          </div>
+
+          <!-- Motivational note -->
+          <div style="margin-top:14px;background:linear-gradient(135deg,#0a1f0a,#122012);border:1px solid #1e4020;border-radius:16px;padding:14px;text-align:center;">
+            <div style="font-size:20px;margin-bottom:6px;">🏆</div>
+            <div style="font-size:13px;font-weight:800;color:#6ec97e;line-height:1.6;">"This month's gym sessions are building<br>the exact base you'll need when we hit<br>the road next month!"</div>
+            <div style="font-size:11px;color:#3a6040;margin-top:6px;">— Your Trainer</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Progression Summary Table ── -->
+    <div class="card" style="margin-bottom:10px;">
+      <div style="font-size:14px;font-weight:800;margin-bottom:12px;">📊 4-Week Progression Summary</div>
+      <div style="overflow-x:auto;">
+        <table class="guide-table">
+          <thead>
+            <tr>
+              <th>Week</th>
+              <th>🏃 Running</th>
+              <th>🏊 Swimming</th>
+              <th>🚴 Cycling</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:700;color:#1a9df1;white-space:nowrap;">Week 1<br><span style="font-size:10px;color:#555;font-weight:400;">May 10–16</span></td>
+              <td style="color:#888;">Walk 2 / Run 1 min intervals<br><span style="color:#555;font-size:10px;">~2–3 km total</span></td>
+              <td style="color:#888;">4–6 × 25 m, full rest<br><span style="color:#555;font-size:10px;">100–150 m total</span></td>
+              <td style="color:#555;font-size:11px;">Not yet introduced</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;color:#1a9df1;white-space:nowrap;">Week 2<br><span style="font-size:10px;color:#555;font-weight:400;">May 17–23</span></td>
+              <td style="color:#888;">Walk 2 / Run 2 min intervals<br><span style="color:#555;font-size:10px;">~3–4 km total</span></td>
+              <td style="color:#888;">4–6 × 25–50 m<br><span style="color:#555;font-size:10px;">150–200 m total</span></td>
+              <td style="color:#555;font-size:11px;">Not yet introduced</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;color:#1a9df1;white-space:nowrap;">Week 3<br><span style="font-size:10px;color:#555;font-weight:400;">May 24–30</span></td>
+              <td style="color:#888;">Walk 1 / Run 3 min intervals<br><span style="color:#555;font-size:10px;">~4–5 km total</span></td>
+              <td style="color:#888;">4–6 × 50 m<br><span style="color:#555;font-size:10px;">200–300 m total</span></td>
+              <td style="color:#888;"><span style="color:#f59e0b;font-weight:700;">Introduced Sat.</span><br>20–25 min easy, 80–90 RPM</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;color:#1a9df1;white-space:nowrap;">Week 4<br><span style="font-size:10px;color:#555;font-weight:400;">May 31–Jun 6</span></td>
+              <td style="color:#888;">Walk 1 / Run 5 min intervals<br><span style="color:#555;font-size:10px;">~5–6 km total</span></td>
+              <td style="color:#888;">100 m+ continuous sets<br><span style="color:#555;font-size:10px;">250–350 m total</span></td>
+              <td style="color:#888;">25–30 min + 2–3 × 30 sec hard intervals</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Extra Tips ── -->
+    <div class="card" style="margin-bottom:10px;padding:0;overflow:hidden;">
+      <div class="acc-header" id="acc-tips-header" onclick="toggleAcc('tips')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:12px;background:rgba(168,85,247,.15);display:flex;align-items:center;justify-content:center;font-size:20px;">⚡</div>
+          <div>
+            <div style="font-size:13px;font-weight:800;">Extra Tips</div>
+            <div style="font-size:11px;color:#555;margin-top:1px;">Recovery, sleep, nutrition timing & hydration</div>
+          </div>
+        </div>
+        <svg class="acc-chevron" id="acc-tips-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="acc-body" id="acc-tips-body">
+        <div style="padding:0 16px 16px;">
+          <!-- Nutrition timing -->
+          <div style="font-size:12px;font-weight:800;color:#a855f7;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Nutrition Timing</div>
+          <div class="guide-tip" style="background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);color:#d8b4fe;margin-bottom:12px;">
+            🍽️ <strong>Pre-workout (1–2 hrs before):</strong> light, easy-to-digest meal. Oats, banana, rice with chicken. Avoid heavy fats or fibre right before training.<br><br>
+            🥩 <strong>Post-workout (within 30–60 min):</strong> this is your protein window. Protein shake + meal is ideal. This is when your body rebuilds muscle most effectively — always hit your 200–230 g daily target.<br><br>
+            🍌 <strong>During sessions over 60 min:</strong> carry a banana or date for quick energy.
+          </div>
+          <!-- Sleep -->
+          <div style="font-size:12px;font-weight:800;color:#a855f7;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Sleep — Non-Negotiable</div>
+          <div class="guide-tip" style="background:#1a1a1a;border:1px solid #222;color:#aaa;margin-bottom:12px;">
+            😴 <strong style="color:#fff;">7–9 hours per night is a training requirement</strong>, not a luxury. The majority of your muscle repair, hormonal recovery, and endurance adaptation happens during deep sleep. A poor night's sleep before a session will hurt performance more than any missed workout.
+          </div>
+          <!-- Hydration -->
+          <div style="font-size:12px;font-weight:800;color:#a855f7;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Hydration</div>
+          <div class="guide-tip" style="background:#1a1a1a;border:1px solid #222;color:#aaa;margin-bottom:12px;">
+            💧 <strong style="color:#fff;">2–3 litres of water daily</strong> as a baseline. Add 500 ml–1 L for every training session. A simple check: your urine should be pale yellow. Dark yellow = you're dehydrated — drink more.
+          </div>
+          <!-- Recovery -->
+          <div style="font-size:12px;font-weight:800;color:#a855f7;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Recovery Strategies</div>
+          <div class="guide-step"><div class="guide-step-num" style="background:#a855f7;">1</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">Cold water / contrast shower after training:</strong> 2–3 min cold, 1 min warm, repeat 2–3 times. Reduces muscle soreness significantly.</div></div>
+          <div class="guide-step"><div class="guide-step-num" style="background:#a855f7;">2</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">Legs up the wall (5–10 min):</strong> lie on your back with legs raised against a wall after running or cycling. Drains fluid from legs, reduces aching.</div></div>
+          <div class="guide-step" style="margin-bottom:0;"><div class="guide-step-num" style="background:#a855f7;">3</div><div style="font-size:12px;color:#aaa;line-height:1.6;"><strong style="color:#fff;">If in doubt, rest.</strong> Overtraining injuries end training blocks. One extra rest day never hurt anyone. Trying to train through pain always does.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom CTA -->
+    <div style="background:linear-gradient(135deg,#071828,#0a2040);border:1px solid #1a3555;border-radius:20px;padding:20px;text-align:center;margin-bottom:4px;">
+      <div style="font-size:28px;margin-bottom:8px;">🏁</div>
+      <div style="font-size:15px;font-weight:900;color:#1a9df1;margin-bottom:6px;">Every expert was once a beginner.</div>
+      <div style="font-size:12px;color:#4a8ab5;line-height:1.65;">The Ironman finish line doesn't care how fast you got there. It only cares that you showed up every day and did the work. You're already doing that.</div>
+      <div style="margin-top:12px;font-size:11px;color:#2a4a6a;">Tap the Schedule tab → log your first session today.</div>
+    </div>
+
+  </div>
+</div><!-- /guide -->
+
+</main><!-- /main -->
+
+<!-- Bottom Nav — 5 tabs -->
+<nav style="position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(5,5,5,.97);border-top:1px solid #161616;backdrop-filter:blur(12px);">
+  <div style="max-width:520px;margin:0 auto;display:flex;justify-content:space-around;padding:5px 0 7px;">
+    <button class="nav-btn" id="nb-dashboard" onclick="goTo('dashboard')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.8" id="ni-dashboard"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span style="font-size:9px;color:#555;font-weight:600;" id="nt-dashboard">Home</span>
+    </button>
+    <button class="nav-btn" id="nb-schedule" onclick="goTo('schedule')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.8" id="ni-schedule"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span style="font-size:9px;color:#555;font-weight:600;" id="nt-schedule">Schedule</span>
+    </button>
+    <button class="nav-btn" id="nb-progress" onclick="goTo('progress')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.8" id="ni-progress"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span style="font-size:9px;color:#555;font-weight:600;" id="nt-progress">Progress</span>
+    </button>
+    <button class="nav-btn" id="nb-nutrition" onclick="goTo('nutrition')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.8" id="ni-nutrition"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      <span style="font-size:9px;color:#555;font-weight:600;" id="nt-nutrition">Nutrition</span>
+    </button>
+    <button class="nav-btn" id="nb-guide" onclick="goTo('guide')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.8" id="ni-guide"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+      <span style="font-size:9px;color:#555;font-weight:600;" id="nt-guide">Guide</span>
+    </button>
+  </div>
+</nav>
+
+<!-- Session Modal -->
+<div class="modal-bg" id="sessionModal" onclick="handleModalBgClick(event)">
+  <div class="modal-sheet" id="modalSheet">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;">
+      <div>
+        <div id="modalTitle" style="font-size:18px;font-weight:900;"></div>
+        <div id="modalDate" style="font-size:13px;color:#555;margin-top:3px;"></div>
+      </div>
+      <button onclick="closeModal()" style="background:none;border:none;color:#444;cursor:pointer;padding:4px;margin-top:2px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#444'">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONFIG — Trainer: edit CLIENT_NAME, TRAINER_NAME below
+// ══════════════════════════════════════════════════════════════
+const CLIENT_NAME   = 'Muayad Alabri';
+const TRAINER_NAME  = 'Your Trainer'; // ← REPLACE with actual trainer name
+
+// ══════════════════════════════════════════════════════════════
+// RESISTANCE WORKOUT PDF LINKS
+// Replace the # placeholder paths with real PDF URLs when ready.
+// Format: 'wN-day' : 'https://your-hosted-link.com/file.pdf'
+// ══════════════════════════════════════════════════════════════
+const PDF = {
+  'w1-sun': '#resistance-w1-sunday.pdf',    // Week 1 · Sunday resistance
+  'w1-tue': '#resistance-w1-tuesday.pdf',   // Week 1 · Tuesday resistance
+  'w1-thu': '#resistance-w1-thursday.pdf',  // Week 1 · Thursday resistance
+  'w2-sun': '#resistance-w2-sunday.pdf',
+  'w2-tue': '#resistance-w2-tuesday.pdf',
+  'w2-thu': '#resistance-w2-thursday.pdf',
+  'w3-sun': '#resistance-w3-sunday.pdf',
+  'w3-tue': '#resistance-w3-tuesday.pdf',
+  'w3-thu': '#resistance-w3-thursday.pdf',
+  'w4-sun': '#resistance-w4-sunday.pdf',
+  'w4-tue': '#resistance-w4-tuesday.pdf',
+  'w4-thu': '#resistance-w4-thursday.pdf',
+};
+
+// ══════════════════════════════════════════════════════════════
+// MOTIVATIONAL MESSAGES
+// ══════════════════════════════════════════════════════════════
+const MOTIVES = [
+  "Every Ironman champion was once exactly where you are. Start. 🚀",
+  "25 meters today. The finish line starts here. 🌊",
+  "You don't have to be fast — you just have to keep moving. 💪",
+  "Consistency beats talent every single time. Show up. ⚡",
+  "Your body is far more capable than your mind believes. 🧠",
+  "One session at a time. That's the whole secret. 🎯",
+  "Pain is temporary. Crossing that finish line is forever. 🏁",
+  "Trust the process. The results will come. 📈",
+  "Beginners who stay consistent become champions. 🏆",
+  "Show up today. Future Muayad will thank you. 🙌",
+  "Every swim stroke is a step toward race day. 🔵",
+  "Your comeback story starts in the water, on the road. 💫",
+];
+
+// ══════════════════════════════════════════════════════════════
+// DATE HELPERS
+// ══════════════════════════════════════════════════════════════
+function localDate(y, m, d) {
+  return new Date(y, m - 1, d); // month is 1-indexed for readability
+}
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+function dateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+function fmtLong(date) {
+  return date.toLocaleDateString('en-GB', {weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+function fmtShort(date) {
+  return date.toLocaleDateString('en-GB', {day:'numeric',month:'short'});
+}
+function today0() {
+  const t = new Date();
+  t.setHours(0,0,0,0);
+  return t;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SCHEDULE BUILDER
+// Program starts Sunday, May 10, 2026
+// ══════════════════════════════════════════════════════════════
+const PROGRAM_START = localDate(2026, 5, 10);
+const WEEK_LABELS   = ['May 10–16','May 17–23','May 24–30','May 31 – Jun 6'];
+const SAT_TYPE      = ['running','swimming','cycling','cycling']; // Saturday session per week
+
+function buildSchedule() {
+  const weeks = [];
+  for (let w = 0; w < 4; w++) {
+    const base    = w * 7;
+    const satType = SAT_TYPE[w];
+    const wk      = w + 1;
+    const days = [
+      {
+        id: `w${wk}-sun`, day: 'Sunday', offset: base,
+        sessions: [
+          { type:'running',    label:'Running Session'                              },
+          { type:'resistance', label:'Resistance Training', pdfKey:`w${wk}-sun`    },
+        ]
+      },
+      {
+        id: `w${wk}-tue`, day: 'Tuesday', offset: base + 2,
+        sessions: [
+          { type:'resistance', label:'Resistance Training', pdfKey:`w${wk}-tue`    },
+        ]
+      },
+      {
+        id: `w${wk}-wed`, day: 'Wednesday', offset: base + 3,
+        sessions: [
+          { type:'running',  label:'Running Session'  },
+          { type:'swimming', label:'Swimming Session' },
+        ]
+      },
+      {
+        id: `w${wk}-thu`, day: 'Thursday', offset: base + 4,
+        sessions: [
+          { type:'resistance', label:'Resistance Training', pdfKey:`w${wk}-thu`    },
+        ]
+      },
+      {
+        id: `w${wk}-sat`, day: 'Saturday', offset: base + 6,
+        sessions: [
+          { type:satType, label: satType.charAt(0).toUpperCase()+satType.slice(1)+' Session' },
+        ]
+      },
+    ];
+    weeks.push({
+      week: wk,
+      label: WEEK_LABELS[w],
+      days: days.map(d => ({ ...d, date: addDays(PROGRAM_START, d.offset) })),
+    });
+  }
+  return weeks;
+}
+
+const SCHEDULE     = buildSchedule();
+const ALL_SESSIONS = [];
+SCHEDULE.forEach(wk => {
+  wk.days.forEach(day => {
+    day.sessions.forEach(s => {
+      ALL_SESSIONS.push({
+        sid: `${day.id}-${s.type}`,
+        week: wk.week,
+        dayId: day.id,
+        day: day.day,
+        date: day.date,
+        dk: dateKey(day.date),
+        type: s.type,
+        label: s.label,
+        pdfKey: s.pdfKey || null,
+      });
+    });
+  });
+});
+
+// ══════════════════════════════════════════════════════════════
+// DATA LAYER  —  Northflank PostgreSQL via Vercel API routes
+// All data is fetched once on startup and cached in memory.
+// Writes go to the API and update the cache immediately so the
+// UI stays snappy (no waiting for the round-trip to re-render).
+// ══════════════════════════════════════════════════════════════
+let _sessionCache = null;   // { sid: logObject, … }
+let _nutCache     = null;   // { dk:  logObject, … }
+
+async function loadAllData() {
+  try {
+    const [sRes, nRes] = await Promise.all([
+      fetch('/api/sessions'),
+      fetch('/api/nutrition'),
+    ]);
+    _sessionCache = sRes.ok ? await sRes.json() : {};
+    _nutCache     = nRes.ok ? await nRes.json() : {};
+  } catch (e) {
+    console.warn('Could not reach API, falling back to empty cache:', e);
+    _sessionCache = {};
+    _nutCache     = {};
+  }
+}
+
+// Synchronous reads (cache must already be populated)
+function getLog(sid)    { return (_sessionCache || {})[sid] || null; }
+function getNutLog(dk)  { return (_nutCache     || {})[dk]  || null; }
+
+// Async writes — update cache first, then persist in background
+async function setLog(sid, data) {
+  const entry = { ...data, at: new Date().toISOString() };
+  if (!_sessionCache) _sessionCache = {};
+  _sessionCache[sid] = entry;
+  try {
+    await fetch('/api/sessions', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ sid, data: entry }),
+    });
+  } catch (e) { console.error('setLog failed:', e); }
+}
+
+async function setNutLog(dk, data) {
+  const entry = { ...data, at: new Date().toISOString() };
+  if (!_nutCache) _nutCache = {};
+  _nutCache[dk] = entry;
+  try {
+    await fetch('/api/nutrition', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ dk, data: entry }),
+    });
+  } catch (e) { console.error('setNutLog failed:', e); }
+}
+
+async function deleteLog(sid) {
+  if (_sessionCache) delete _sessionCache[sid];
+  try {
+    await fetch('/api/sessions', {
+      method:  'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ sid }),
+    });
+  } catch (e) { console.error('deleteLog failed:', e); }
+}
+
+async function resetAllData() {
+  _sessionCache = {};
+  _nutCache     = {};
+  await Promise.all([
+    fetch('/api/sessions',  { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: '{}' }),
+    fetch('/api/nutrition', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: '{}' }),
+  ]);
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════
+let curPage = 'dashboard';
+let curWeek = 1;
+
+const ALL_PAGES = ['dashboard','schedule','progress','nutrition','guide'];
+
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+
+  ALL_PAGES.forEach(p => {
+    const col = p === page ? '#1a9df1' : '#555';
+    const icon = document.getElementById('ni-' + p);
+    if (icon) icon.setAttribute('stroke', col);
+    const txt  = document.getElementById('nt-' + p);
+    if (txt)  txt.style.color = col;
+  });
+
+  curPage = page;
+  render(page);
+}
+
+function render(page) {
+  if (page === 'dashboard') renderDashboard();
+  if (page === 'schedule')  renderSchedule();
+  if (page === 'progress')  renderProgress();
+  if (page === 'nutrition') renderNutritionPage();
+  // Guide is static HTML — no render function needed
+}
+
+// ══════════════════════════════════════════════════════════════
+// CURRENT WEEK HELPER
+// ══════════════════════════════════════════════════════════════
+function getCurrentWeekNum(t = today0()) {
+  const diff = t - PROGRAM_START;
+  const days = Math.floor(diff / 86400000);
+  if (days < 0) return 0;
+  const w = Math.floor(days / 7) + 1;
+  return w > 4 ? 5 : w; // 5 = after program ends
+}
+
+// ══════════════════════════════════════════════════════════════
+// STREAK
+// ══════════════════════════════════════════════════════════════
+function calcStreak() {
+  const logs     = _sessionCache || {};
+  const doneKeys = new Set();
+  ALL_SESSIONS.forEach(s => {
+    if (logs[s.sid]?.completed) doneKeys.add(s.dk);
+  });
+  let streak = 0;
+  let d      = today0();
+  while (true) {
+    if (doneKeys.has(dateKey(d))) { streak++; d = addDays(d, -1); }
+    else break;
+  }
+  return streak;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SESSION CARD HTML
+// ══════════════════════════════════════════════════════════════
+const TYPE_ICON  = { running:'🏃', swimming:'🏊', cycling:'🚴', resistance:'💪' };
+const TYPE_COLOR = { running:'#22c55e', swimming:'#3b82f6', cycling:'#f59e0b', resistance:'#a855f7' };
+
+function sessionCard(s) {
+  const log  = getLog(s.sid);
+  const done = !!log?.completed;
+  const col  = TYPE_COLOR[s.type] || '#1a9df1';
+  const hex2rgb = (hex, ch) => parseInt(hex.slice(ch,ch+2),16);
+  const rgba = `rgba(${hex2rgb(col,1)},${hex2rgb(col,3)},${hex2rgb(col,5)},.15)`;
+  return `
+    <div class="session-card${done?' done':''}" onclick="openModal('${s.sid}')" style="margin-bottom:8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:13px;background:${rgba};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${TYPE_ICON[s.type]||'🏋️'}</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;">${s.label}</div>
+            <div style="font-size:11px;color:#555;margin-top:2px;">${fmtShort(s.date)}${log&&log.distance?' · '+log.distance+(s.type==='swimming'?'m':'km'):''}${log&&log.duration?' · '+log.duration+'min':''}</div>
+          </div>
+        </div>
+        ${done
+          ? `<svg class="pop" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a9df1" stroke-width="2.5"><circle cx="12" cy="12" r="10" fill="rgba(26,157,241,.12)"/><polyline points="8 12 11 15 16 9"/></svg>`
+          : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`
+        }
+      </div>
+      ${log?.notes ? `<div style="font-size:11px;color:#555;margin-top:8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">"${log.notes}"</div>` : ''}
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════════
+function renderDashboard() {
+  const t = today0();
+  const idx = Math.floor(Date.now() / 86400000) % MOTIVES.length;
+  document.getElementById('motiveText').textContent = MOTIVES[idx];
+  document.getElementById('todayLabel').textContent = t.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+
+  const todaySessions = ALL_SESSIONS.filter(s => s.dk === dateKey(t));
+  const todayEl       = document.getElementById('todaySessions');
+  const wk            = getCurrentWeekNum(t);
+
+  if (t < PROGRAM_START) {
+    const daysLeft = Math.ceil((PROGRAM_START - t) / 86400000);
+    todayEl.innerHTML = `<div class="card" style="text-align:center;padding:24px;">
+      <div style="font-size:32px;margin-bottom:8px;">⏳</div>
+      <div style="font-size:15px;font-weight:700;color:#1a9df1;">Program starts in ${daysLeft} day${daysLeft!==1?'s':''}!</div>
+      <div style="font-size:12px;color:#555;margin-top:6px;">Sunday, 10 May 2026 — get ready!</div>
+    </div>`;
+  } else if (wk > 4) {
+    todayEl.innerHTML = `<div class="card" style="text-align:center;padding:24px;">
+      <div style="font-size:32px;margin-bottom:8px;">🏆</div>
+      <div style="font-size:15px;font-weight:700;color:#1a9df1;">4-Week Program Complete!</div>
+      <div style="font-size:12px;color:#555;margin-top:6px;">You made it. Review your progress above.</div>
+    </div>`;
+  } else if (todaySessions.length === 0) {
+    todayEl.innerHTML = `<div class="card" style="text-align:center;padding:24px;">
+      <div style="font-size:32px;margin-bottom:8px;">😴</div>
+      <div style="font-size:14px;font-weight:600;color:#777;">Rest day — recover & rebuild.</div>
+      <div style="font-size:12px;color:#555;margin-top:4px;">Hydrate, sleep well, eat your protein!</div>
+    </div>`;
+  } else {
+    todayEl.innerHTML = todaySessions.map(sessionCard).join('');
+  }
+
+  // Week progress bar
+  const wkNum    = Math.min(4, Math.max(1, wk || 1));
+  const wkS      = ALL_SESSIONS.filter(s => s.week === wkNum);
+  const done     = wkS.filter(s => getLog(s.sid)?.completed).length;
+  const total    = wkS.length;
+  const pct      = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('weekBar').style.width        = pct + '%';
+  document.getElementById('weekLabel').textContent      = wk >= 1 && wk <= 4 ? `Week ${wkNum}` : 'Program';
+  document.getElementById('weekBarText').textContent    = wk >= 1 && wk <= 4
+    ? `${done} of ${total} sessions completed (${pct}%)`
+    : wk === 0 ? 'Program starts May 10, 2026' : 'Program complete!';
+
+  // Nutrition quick view
+  const nl     = getNutLog(dateKey(t)) || {};
+  const calDone = nl.calories || 0;
+  const proDone = nl.protein  || 0;
+  const calPct  = Math.min(100, Math.round(calDone / 2400 * 100));
+  const proPct  = Math.min(100, Math.round(proDone / 215  * 100));
+  document.getElementById('nutQuick').innerHTML = `
+    <div style="background:rgba(26,157,241,.07);border:1px solid rgba(26,157,241,.18);border-radius:14px;padding:12px;">
+      <div style="font-size:11px;color:#4a8ab5;margin-bottom:4px;">Calories</div>
+      <div style="font-size:20px;font-weight:900;color:#1a9df1;">${calDone}<span style="font-size:11px;color:#555;"> / 2400</span></div>
+      <div style="height:5px;background:#1e1e1e;border-radius:9999px;margin-top:7px;overflow:hidden;">
+        <div style="height:100%;background:#1a9df1;width:${calPct}%;border-radius:9999px;transition:width .5s;"></div>
+      </div>
+    </div>
+    <div style="background:rgba(26,157,241,.07);border:1px solid rgba(26,157,241,.18);border-radius:14px;padding:12px;">
+      <div style="font-size:11px;color:#4a8ab5;margin-bottom:4px;">Protein</div>
+      <div style="font-size:20px;font-weight:900;color:#1a9df1;">${proDone}g<span style="font-size:11px;color:#555;"> / 200–230</span></div>
+      <div style="height:5px;background:#1e1e1e;border-radius:9999px;margin-top:7px;overflow:hidden;">
+        <div style="height:100%;background:#1a9df1;width:${proPct}%;border-radius:9999px;transition:width .5s;"></div>
+      </div>
+    </div>`;
+
+  document.getElementById('streakNum').textContent = calcStreak();
+}
+
+// ══════════════════════════════════════════════════════════════
+// SCHEDULE
+// ══════════════════════════════════════════════════════════════
+function renderWeekTabs() {
+  document.getElementById('weekTabs').innerHTML = [1,2,3,4].map(w => `
+    <div class="week-tab ${w===curWeek?'active':'inactive'}" onclick="switchWeek(${w})">
+      <div>W${w}</div>
+      <div style="font-size:9px;opacity:.7;margin-top:1px;">${WEEK_LABELS[w-1]}</div>
+    </div>`).join('');
+}
+
+function switchWeek(w) {
+  curWeek = w;
+  renderSchedule();
+}
+
+function renderSchedule() {
+  renderWeekTabs();
+  const wk  = SCHEDULE[curWeek - 1];
+  let html  = '';
+  wk.days.forEach(day => {
+    html += `<div style="margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:800;color:#1a9df1;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">
+        ${day.date.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+      </div>`;
+    day.sessions.forEach(s => {
+      const sid   = `${day.id}-${s.type}`;
+      const fullS = ALL_SESSIONS.find(x => x.sid === sid);
+      if (fullS) html += sessionCard(fullS);
+      if (s.pdfKey) {
+        const url           = PDF[s.pdfKey] || '#';
+        const isPlaceholder = url.startsWith('#');
+        html += `<a href="${url}" ${isPlaceholder?'':'target="_blank"'}
+          onclick="${isPlaceholder?`event.preventDefault();showToast('PDF not yet uploaded — your trainer will add it soon! 📄','#f59e0b')`:''}"
+          style="display:flex;align-items:center;gap:10px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);border-radius:14px;padding:12px 14px;text-decoration:none;color:#a855f7;font-size:13px;font-weight:700;margin-bottom:8px;transition:all .18s;"
+          onmouseover="this.style.background='rgba(168,85,247,.18)'" onmouseout="this.style.background='rgba(168,85,247,.1)'">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          View Resistance Workout PDF
+          ${isPlaceholder?'<span style="font-size:10px;opacity:.6;margin-left:auto;">Coming soon</span>':'<span style="margin-left:auto;font-size:12px;opacity:.7;">↗</span>'}
+        </a>`;
+      }
+    });
+    html += '</div>';
+  });
+  document.getElementById('scheduleBody').innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════
+// PROGRESS
+// ══════════════════════════════════════════════════════════════
+function renderProgress() {
+  const logs = _sessionCache || {};
+  let totalRun = 0, totalSwim = 0, totalBike = 0, totalResistance = 0;
+  ALL_SESSIONS.forEach(s => {
+    const l = logs[s.sid];
+    if (!l?.completed) return;
+    if (s.type === 'running')    totalRun       += parseFloat(l.distance || 0);
+    if (s.type === 'swimming')   totalSwim      += parseFloat(l.distance || 0);
+    if (s.type === 'cycling')    totalBike      += parseFloat(l.distance || 0);
+    if (s.type === 'resistance') totalResistance++;
+  });
+
+  document.getElementById('totalsRow').innerHTML =
+    statBox('🏃','Run',  totalRun.toFixed(1)+'km') +
+    statBox('🏊','Swim', Math.round(totalSwim)+'m') +
+    statBox('🚴','Bike', totalBike.toFixed(1)+'km');
+
+  let barsHtml = '';
+  SCHEDULE.forEach(wk => {
+    const wkS  = ALL_SESSIONS.filter(s => s.week === wk.week);
+    const done  = wkS.filter(s => logs[s.sid]?.completed).length;
+    const total = wkS.length;
+    const pct   = total ? Math.round(done / total * 100) : 0;
+    const col   = pct >= 80 ? '#22c55e' : pct >= 40 ? '#1a9df1' : '#555';
+    barsHtml += `<div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;">
+        <span style="font-weight:700;">Week ${wk.week} <span style="color:#555;font-weight:400;">(${wk.label})</span></span>
+        <span style="color:${col};font-weight:700;">${done}/${total}</span>
+      </div>
+      <div style="height:8px;background:#1e1e1e;border-radius:9999px;overflow:hidden;">
+        <div class="progress-fill" style="height:100%;background:${col};width:${pct}%;"></div>
+      </div>
+      <div style="font-size:11px;color:#555;text-align:right;margin-top:3px;">${pct}%</div>
+    </div>`;
+  });
+  document.getElementById('weekBars').innerHTML = barsHtml;
+
+  const done   = ALL_SESSIONS.filter(s => logs[s.sid]?.completed).sort((a,b)=> b.date-a.date);
+  const histEl = document.getElementById('historyList');
+  if (!done.length) {
+    histEl.innerHTML = `<div style="text-align:center;padding:24px;color:#555;font-size:13px;">No completed sessions yet.<br><span style="font-size:11px;color:#444;">Start logging to build your history!</span></div>`;
+    return;
+  }
+  histEl.innerHTML = done.map(s => {
+    const l      = logs[s.sid];
+    let detail   = '';
+    if (s.type === 'swimming')   detail = l.distance ? `${l.distance}m` : '';
+    else if (s.type === 'resistance') detail = l.sets || 'Completed';
+    else detail = l.distance ? `${l.distance}km` : '';
+    if (s.type !== 'resistance' && l.duration) detail += (detail ? ' · ' : '') + l.duration + 'min';
+    if (l.rpe) detail += ` · RPE ${l.rpe}`;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #151515;">
+      <div style="font-size:20px;flex-shrink:0;">${TYPE_ICON[s.type]||'🏋️'}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;">${s.label}</div>
+        <div style="font-size:11px;color:#555;margin-top:2px;">${fmtShort(s.date)} · Week ${s.week}${detail?' · '+detail:''}</div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a9df1" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>`;
+  }).join('');
+}
+
+function statBox(icon, label, val) {
+  return `<div class="card" style="text-align:center;padding:14px;">
+    <div style="font-size:22px;margin-bottom:4px;">${icon}</div>
+    <div style="font-size:11px;color:#555;margin-bottom:3px;">${label}</div>
+    <div style="font-size:17px;font-weight:900;color:#1a9df1;">${val}</div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// NUTRITION PAGE
+// ══════════════════════════════════════════════════════════════
+function renderNutritionPage() {
+  const t = today0();
+  document.getElementById('nutDateLabel').textContent = fmtLong(t);
+  const nl = getNutLog(dateKey(t)) || {};
+  document.getElementById('nutCal').value   = nl.calories || '';
+  document.getElementById('nutPro').value   = nl.protein  || '';
+  document.getElementById('nutNotes').value = nl.notes    || '';
+  renderNutHistory();
+}
+
+async function saveNutrition() {
+  const t     = today0();
+  const cal   = parseInt(document.getElementById('nutCal').value)   || 0;
+  const pro   = parseInt(document.getElementById('nutPro').value)   || 0;
+  const notes = document.getElementById('nutNotes').value.trim();
+  await setNutLog(dateKey(t), { calories:cal, protein:pro, notes });
+  showToast('Nutrition logged! 🥗');
+  renderNutHistory();
+}
+
+function renderNutHistory() {
+  const logs    = _nutCache || {};
+  const entries = Object.entries(logs).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,10);
+  const el      = document.getElementById('nutHistory');
+  if (!entries.length) {
+    el.innerHTML = `<div style="text-align:center;color:#555;font-size:13px;padding:16px;">No logs yet — start tracking above!</div>`;
+    return;
+  }
+  el.innerHTML = entries.map(([dk2, l]) => {
+    const d      = new Date(dk2);
+    const calOk  = l.calories >= 2200 && l.calories <= 2600;
+    const proOk  = l.protein  >= 200  && l.protein  <= 230;
+    const calCol = calOk ? '#22c55e' : l.calories < 1800 ? '#ef4444' : '#f59e0b';
+    const proCol = proOk ? '#22c55e' : l.protein  < 150  ? '#ef4444' : '#f59e0b';
+    const calPct = Math.min(100, Math.round((l.calories||0)/2400*100));
+    const proPct = Math.min(100, Math.round((l.protein||0)/215*100));
+    return `<div style="padding:12px 0;border-bottom:1px solid #151515;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:700;">${d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</div>
+        <div style="font-size:11px;color:#555;">${l.notes?'💬 '+l.notes.slice(0,28)+(l.notes.length>28?'…':''):''}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;">
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+            <span style="color:#555;">Calories</span><span style="color:${calCol};font-weight:700;">${l.calories||0} kcal</span>
+          </div>
+          <div style="height:4px;background:#1e1e1e;border-radius:9999px;overflow:hidden;">
+            <div style="height:100%;background:${calCol};width:${calPct}%;border-radius:9999px;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+            <span style="color:#555;">Protein</span><span style="color:${proCol};font-weight:700;">${l.protein||0}g</span>
+          </div>
+          <div style="height:4px;background:#1e1e1e;border-radius:9999px;overflow:hidden;">
+            <div style="height:100%;background:${proCol};width:${proPct}%;border-radius:9999px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// GUIDE ACCORDION
+// ══════════════════════════════════════════════════════════════
+function toggleAcc(id) {
+  const body = document.getElementById('acc-' + id + '-body');
+  const chev = document.getElementById('acc-' + id + '-chev');
+  if (!body) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+  chev.setAttribute('stroke', isOpen ? '#555' : '#1a9df1');
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════════════════════════
+let curSid = null;
+
+function openModal(sid) {
+  curSid       = sid;
+  const s      = ALL_SESSIONS.find(x => x.sid === sid);
+  if (!s) return;
+  const log    = getLog(sid) || {};
+  document.getElementById('modalTitle').textContent = s.label;
+  document.getElementById('modalDate').textContent  = fmtLong(s.date);
+  document.getElementById('modalBody').innerHTML    = buildForm(s, log);
+  document.getElementById('sessionModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  const rpeEl = document.getElementById('rpeRange');
+  if (rpeEl) updateRpe(rpeEl.value);
+}
+
+function closeModal() {
+  document.getElementById('sessionModal').classList.remove('open');
+  document.body.style.overflow = '';
+  curSid = null;
+  render(curPage);
+}
+
+function handleModalBgClick(e) {
+  if (e.target === document.getElementById('sessionModal')) closeModal();
+}
+
+function buildForm(s, log) {
+  if (s.type === 'resistance') return formResistance(s, log);
+  if (s.type === 'swimming')   return formSwimming(s, log);
+  return formCardio(s, log);
+}
+
+function rpeSlider(val) {
+  const v      = val || 5;
+  const labels = ['','Easy','Easy','Moderate','Moderate','Hard','Hard','Very Hard','Very Hard','Max','All Out'];
+  return `<div style="margin-bottom:4px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <label style="font-size:12px;color:#666;">Effort (RPE 1–10)</label>
+      <div id="rpeLabel" style="font-size:13px;font-weight:800;color:#1a9df1;">${v}/10 — ${labels[v]}</div>
+    </div>
+    <input type="range" id="rpeRange" min="1" max="10" value="${v}" style="width:100%;height:4px;" oninput="updateRpe(this.value)">
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#444;margin-top:4px;"><span>Easy</span><span>All Out</span></div>
+  </div>`;
+}
+
+function updateRpe(v) {
+  const labels = ['','Easy','Easy','Moderate','Moderate','Hard','Hard','Very Hard','Very Hard','Max','All Out'];
+  const el     = document.getElementById('rpeLabel');
+  if (el) el.textContent = `${v}/10 — ${labels[v]||''}`;
+}
+
+function clearBtn() {
+  return `<button class="btn btn-ghost" style="margin-top:8px;" onclick="clearSession()">Clear Log</button>`;
+}
+
+function formResistance(s, log) {
+  const url           = s.pdfKey ? (PDF[s.pdfKey]||'#') : '#';
+  const isPlaceholder = url.startsWith('#');
+  return `<div style="display:flex;flex-direction:column;gap:14px;">
+    <a href="${url}" ${isPlaceholder?'':'target="_blank"'}
+       onclick="${isPlaceholder?`event.preventDefault();showToast('PDF not uploaded yet — trainer will add soon! 📄','#f59e0b')`:''}"
+       style="display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.35);border-radius:14px;padding:14px;color:#a855f7;font-size:14px;font-weight:700;text-decoration:none;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      View Resistance Workout PDF
+    </a>
+    <label style="display:flex;align-items:center;gap:12px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:13px;padding:14px;cursor:pointer;">
+      <input type="checkbox" id="doneCheck" ${log.completed?'checked':''}>
+      <span style="font-size:14px;font-weight:700;">Mark as Completed ✓</span>
+    </label>
+    <div>
+      <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">Sets / Reps <span style="color:#444;">(optional)</span></label>
+      <input type="text" id="setsReps" placeholder="e.g. 3×10 squats, 3×8 bench press" value="${log.sets||''}">
+    </div>
+    <div>
+      <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">Notes</label>
+      <textarea id="formNotes" rows="3" placeholder="How did the workout feel? Any modifications?" style="resize:none;">${log.notes||''}</textarea>
+    </div>
+    <div>
+      <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">How I Felt</label>
+      <input type="text" id="formFeel" placeholder="e.g. Strong, tired but pushed through…" value="${log.howIfelt||''}">
+    </div>
+    <button class="btn btn-blue" onclick="saveSession()">Save Session</button>
+    ${log.completed ? clearBtn() : ''}
+  </div>`;
+}
+
+function formSwimming(s, log) {
+  return `<div style="display:flex;flex-direction:column;gap:14px;">
+    <div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:13px;padding:12px;text-align:center;font-size:12px;color:#60a5fa;">
+      🌊 Beginner swimmer — every stroke counts. 25 m intervals are great!
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">Distance (meters)</label>
+        <input type="number" id="formDist" placeholder="e.g. 200" min="0" value="${log.distance||''}">
+      </div>
+      <div>
+        <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">Duration (min)</label>
+        <input type="number" id="formDuration" placeholder="e.g. 30" min="0" value="${log.duration||''}">
+      </div>
+    </div>
+    ${rpeSlider(log.rpe)}
+    <div>
+      <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">Notes</label>
+      <textarea id="formNotes" rows="3" placeholder="Drills, technique, pool or open water…" style="resize:none;">${log.notes||''}</textarea>
+    </div>
+    <div>
+      <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">How I Felt</label>
+      <input type="text" id="formFeel" placeholder="e.g. Confident, struggled with breathing…" value="${log.howIfelt||''}">
+    </div>
+    <button class="btn btn-blue" onclick="saveSession()">Save Session</button>
+    ${log.completed ? clearBtn() : ''}
+  </div>`;
+}
+
+function formCardio(s, log) {
+  const isRun         = s.type === 'running';
+  const paceLabel     = isRun ? 'Avg Pace (min/km)' : 'Avg Speed (km/h)';
+  const pacePlaceholder = isRun ? 'e.g. 7:30' : 'e.g. 22';
+  const tipColor      = isRun ? 'rgba(34,197,94,' : 'rgba(245,158,11,';
+  const tipText       = isRun
+    ? '🏃 Run/walk intervals are totally valid — just keep moving!'
+    : '🚴 Aim for 80–90 RPM. Easy, steady effort. Use the gym bike display!';
+  return `<div style="display:flex;flex-direction:column;gap:14px;">
+    <div style="background:${tipColor}.08);border:1px solid ${tipColor}.2);border-radius:13px;padding:12px;text-align:center;font-size:12px;color:${isRun?'#86efac':'#fcd34d'};">${tipText}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">Distance (km)</label>
+        <input type="number" id="formDist" placeholder="e.g. 3.5" min="0" step="0.1" value="${log.distance||''}">
+      </div>
+      <div>
+        <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">Duration (min)</label>
+        <input type="number" id="formDuration" placeholder="e.g. 35" min="0" value="${log.duration||''}">
+      </div>
+    </div>
+    <div>
+      <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">${paceLabel}</label>
+      <input type="text" id="formPace" placeholder="${pacePlaceholder}" value="${log.pace||''}">
+    </div>
+    ${rpeSlider(log.rpe)}
+    <div>
+      <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">Notes</label>
+      <textarea id="formNotes" rows="3" placeholder="${isRun?'Route, terrain, intervals, how breathing felt…':'Resistance level, cadence, how legs felt…'}" style="resize:none;">${log.notes||''}</textarea>
+    </div>
+    <div>
+      <label style="font-size:12px;color:#666;display:block;margin-bottom:5px;">How I Felt</label>
+      <input type="text" id="formFeel" placeholder="e.g. Strong start, legs heavy at the end…" value="${log.howIfelt||''}">
+    </div>
+    <button class="btn btn-blue" onclick="saveSession()">Save Session</button>
+    ${log.completed ? clearBtn() : ''}
+  </div>`;
+}
+
+async function saveSession() {
+  if (!curSid) return;
+  const s    = ALL_SESSIONS.find(x => x.sid === curSid);
+  if (!s) return;
+  const data = { completed: true };
+
+  if (s.type === 'resistance') {
+    data.completed = document.getElementById('doneCheck')?.checked || false;
+    data.sets      = document.getElementById('setsReps')?.value.trim() || '';
+  } else {
+    data.distance = document.getElementById('formDist')?.value     || '';
+    data.duration = document.getElementById('formDuration')?.value || '';
+    data.rpe      = document.getElementById('rpeRange')?.value     || '5';
+    if (s.type !== 'swimming') {
+      data.pace   = document.getElementById('formPace')?.value.trim() || '';
+    }
+  }
+  data.notes    = document.getElementById('formNotes')?.value.trim() || '';
+  data.howIfelt = document.getElementById('formFeel')?.value.trim()  || '';
+
+  await setLog(curSid, data);
+  showToast('Session saved! 🎉');
+  setTimeout(closeModal, 500);
+}
+
+async function clearSession() {
+  if (!curSid) return;
+  await deleteLog(curSid);
+  showToast('Session cleared');
+  closeModal();
+}
+
+// ══════════════════════════════════════════════════════════════
+// RESET
+// ══════════════════════════════════════════════════════════════
+async function confirmReset() {
+  if (confirm('⚠️ Reset ALL data?\n\nThis will permanently delete all session logs and nutrition entries.\n\nThis cannot be undone.')) {
+    await resetAllData();
+    showToast('All data reset', '#ef4444');
+    render(curPage);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════
+let toastTimer = null;
+function showToast(msg, bg = '#1a9df1') {
+  const t       = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = bg;
+  t.style.color = '#fff';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT  —  fetch all data from Northflank DB, then render
+// ══════════════════════════════════════════════════════════════
+(async function init() {
+  // Show a loading overlay while we fetch data from the database
+  const overlay = document.createElement('div');
+  overlay.id = 'loadingOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;';
+  overlay.innerHTML = `
+    <div style="width:48px;height:48px;border:3px solid #1a1a1a;border-top-color:#1a9df1;border-radius:50%;animation:spin .8s linear infinite;"></div>
+    <div style="font-size:13px;color:#555;font-weight:600;">Loading your data…</div>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
+  document.body.appendChild(overlay);
+
+  await loadAllData();
+
+  // Remove loading overlay
+  overlay.remove();
+
+  // Auto-select current week on schedule tab
+  const wk = getCurrentWeekNum();
+  curWeek  = (wk >= 1 && wk <= 4) ? wk : 1;
+
+  // Activate dashboard nav icon on load
+  document.getElementById('ni-dashboard').setAttribute('stroke','#1a9df1');
+  document.getElementById('nt-dashboard').style.color = '#1a9df1';
+
+  goTo('dashboard');
+})();
+</script>
+
+<!-- Footer -->
+<div style="text-align:center;font-size:11px;color:#2a2a2a;padding:12px 0 6px;max-width:520px;margin:0 auto;">
+  Built for Muayad Alabri by Your Trainer &nbsp;·&nbsp; Ironman Training 2026 &nbsp;·&nbsp; <span style="color:#1a9df1;">@muayadfit</span>
+</div>
+
+</body>
+</html>
