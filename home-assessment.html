@@ -1,0 +1,717 @@
+<title>Muayad Fit Home Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700&display=swap">
+<style>
+  :root{
+    --ground:#eef3f8;
+    --surface:#ffffff;
+    --surface-2:#f4f8fc;
+    --line:#d8e3ee;
+    --line-soft:#e7eef6;
+    --ink:#0b1116;
+    --ink-2:#43555f;
+    --ink-3:#6f838f;
+    --brand:#1a9df1;
+    --brand-deep:#0f6ba8;
+    --brand-wash:#e6f4fe;
+    --good:#12876a;
+    --mid:#b1740c;
+    --low:#c04a34;
+    --shadow:0 1px 2px rgba(11,17,22,.06), 0 8px 24px -16px rgba(11,17,22,.28);
+    --radius:14px;
+    --font-body:"Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-display:"Sora", "Manrope", ui-sans-serif, system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#0a0e12;
+      --surface:#131a20;
+      --surface-2:#1a232b;
+      --line:#26333d;
+      --line-soft:#1f2a33;
+      --ink:#eaf1f7;
+      --ink-2:#a9bcc9;
+      --ink-3:#7d919e;
+      --brand:#3fb0f7;
+      --brand-deep:#8ecffc;
+      --brand-wash:#10293b;
+      --good:#3cc79f;
+      --mid:#e0a53c;
+      --low:#f0806a;
+      --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 28px -18px rgba(0,0,0,.9);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0a0e12;
+    --surface:#131a20;
+    --surface-2:#1a232b;
+    --line:#26333d;
+    --line-soft:#1f2a33;
+    --ink:#eaf1f7;
+    --ink-2:#a9bcc9;
+    --ink-3:#7d919e;
+    --brand:#3fb0f7;
+    --brand-deep:#8ecffc;
+    --brand-wash:#10293b;
+    --good:#3cc79f;
+    --mid:#e0a53c;
+    --low:#f0806a;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 28px -18px rgba(0,0,0,.9);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.55;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:600px;margin:0 auto;padding:20px 16px 64px;}
+
+  /* ---------- masthead ---------- */
+  .mast{
+    display:flex;align-items:flex-start;gap:12px;
+    padding-bottom:18px;border-bottom:2px solid var(--brand);
+    margin-bottom:22px;
+  }
+  .mark{
+    flex:none;width:38px;height:38px;border-radius:10px;
+    background:var(--brand);color:#fff;
+    font-family:var(--font-display);font-weight:700;font-size:17px;
+    display:grid;place-items:center;letter-spacing:-.02em;
+  }
+  h1{
+    font-family:var(--font-display);font-weight:700;
+    font-size:clamp(22px,6vw,28px);line-height:1.15;margin:0;
+    letter-spacing:-.02em;text-wrap:balance;
+  }
+  .mast p{margin:5px 0 0;color:var(--ink-2);font-size:14px;}
+
+  /* ---------- generic blocks ---------- */
+  .eyebrow{
+    font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--brand-deep);margin:0 0 10px;
+  }
+  section.panel{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:18px 16px;margin-bottom:14px;
+    box-shadow:var(--shadow);
+  }
+  h2{
+    font-family:var(--font-display);font-weight:600;font-size:18px;
+    margin:0 0 4px;letter-spacing:-.01em;
+  }
+  .hint{color:var(--ink-3);font-size:13.5px;margin:0 0 14px;}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .field:last-child{margin-bottom:0;}
+  label{font-size:13px;font-weight:600;color:var(--ink-2);}
+  input[type="number"], select{
+    font-family:var(--font-body);font-size:17px;font-weight:600;
+    color:var(--ink);background:var(--surface-2);
+    border:1px solid var(--line);border-radius:10px;
+    padding:12px 12px;width:100%;
+    font-variant-numeric:tabular-nums;
+    appearance:none;
+  }
+  input[type="number"]:focus-visible, select:focus-visible, button:focus-visible{
+    outline:3px solid var(--brand);outline-offset:2px;
+  }
+  select{
+    background-image:linear-gradient(45deg,transparent 50%,var(--ink-3) 50%),linear-gradient(135deg,var(--ink-3) 50%,transparent 50%);
+    background-position:calc(100% - 20px) 22px, calc(100% - 14px) 22px;
+    background-size:6px 6px, 6px 6px;background-repeat:no-repeat;
+    padding-right:38px;
+  }
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+  /* segmented control */
+  .seg{display:flex;gap:6px;flex-wrap:wrap;}
+  .seg button{
+    flex:1 1 0;min-width:0;
+    font-family:var(--font-body);font-size:13.5px;font-weight:600;
+    padding:10px 10px;border-radius:9px;cursor:pointer;
+    background:var(--surface-2);color:var(--ink-2);
+    border:1px solid var(--line);
+    transition:background .15s ease,color .15s ease,border-color .15s ease;
+  }
+  .seg button[aria-pressed="true"]{
+    background:var(--brand);border-color:var(--brand);color:#fff;
+  }
+
+  /* ---------- results ---------- */
+  .verdict{
+    background:var(--surface);border:1px solid var(--line);
+    border-top:4px solid var(--brand);
+    border-radius:var(--radius);padding:18px 16px;margin-bottom:14px;
+    box-shadow:var(--shadow);
+  }
+  .level{
+    font-family:var(--font-display);font-weight:700;
+    font-size:clamp(24px,7vw,32px);letter-spacing:-.02em;margin:2px 0 2px;
+  }
+  .level small{display:block;font-family:var(--font-body);font-size:13.5px;font-weight:500;color:var(--ink-2);letter-spacing:0;}
+  .scores{
+    display:grid;grid-template-columns:1fr 1fr;gap:1px;
+    background:var(--line-soft);border:1px solid var(--line-soft);
+    border-radius:12px;overflow:hidden;margin-top:16px;
+  }
+  .score{background:var(--surface);padding:12px 14px;}
+  .score dt{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin:0;}
+  .score dd{margin:4px 0 0;font-family:var(--font-display);font-size:23px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
+  .score dd span{font-size:12px;font-weight:500;font-family:var(--font-body);color:var(--ink-3);}
+  .band{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;line-height:1.35;}
+  .band.b-low{color:var(--low);background:color-mix(in srgb,var(--low) 12%,transparent);}
+  .band.b-mid{color:var(--mid);background:color-mix(in srgb,var(--mid) 14%,transparent);}
+  .band.b-good{color:var(--good);background:color-mix(in srgb,var(--good) 13%,transparent);}
+
+  /* test tally */
+  .tally{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;}
+  .tally li{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:14px;
+  }
+  .tally li:last-child{border-bottom:none;}
+  .tally .name{flex:1 1 auto;color:var(--ink-2);}
+  .tally .val{font-weight:700;font-variant-numeric:tabular-nums;}
+  .pips{display:flex;gap:3px;flex:none;}
+  .pip{width:8px;height:16px;border-radius:2px;background:var(--line);}
+  .pip.on{background:var(--brand);}
+
+  /* week tabs */
+  .weeks{display:flex;gap:6px;margin-bottom:14px;}
+  .weeks button{
+    flex:1;font-family:var(--font-body);font-size:14px;font-weight:600;
+    padding:10px;border-radius:9px;cursor:pointer;
+    background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2);
+  }
+  .weeks button[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff;}
+  .exlist{list-style:none;margin:0;padding:0;}
+  .exlist li{
+    display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+    padding:11px 0;border-bottom:1px solid var(--line-soft);
+  }
+  .exlist li:last-child{border-bottom:none;}
+  .exlist .ex{font-weight:600;font-size:15px;}
+  .exlist .ex em{display:block;font-style:normal;font-weight:500;font-size:12.5px;color:var(--ink-3);}
+  .exlist .dose{
+    font-family:var(--font-display);font-weight:700;font-size:19px;
+    color:var(--brand-deep);font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .circuit{
+    background:var(--brand-wash);border-radius:10px;padding:10px 12px;
+    font-size:13.5px;color:var(--ink-2);margin:0 0 12px;
+  }
+  .circuit b{color:var(--ink);}
+  .schedule{
+    display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px;
+  }
+  .day{
+    text-align:center;padding:8px 2px;border-radius:8px;
+    background:var(--surface-2);border:1px solid var(--line-soft);
+  }
+  .day b{display:block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:700;}
+  .day span{display:block;font-size:10.5px;font-weight:600;margin-top:3px;line-height:1.25;}
+  .day.strength{background:var(--brand);border-color:var(--brand);}
+  .day.strength b,.day.strength span{color:#fff;}
+  .day.run{background:var(--brand-wash);border-color:var(--brand-wash);}
+  .day.run span{color:var(--brand-deep);}
+
+  /* notes */
+  .notes h3{
+    font-family:var(--font-display);font-size:14px;font-weight:600;
+    margin:16px 0 6px;
+  }
+  .notes h3:first-of-type{margin-top:0;}
+  .notes ul{margin:0;padding-left:18px;color:var(--ink-2);font-size:14px;}
+  .notes li{margin-bottom:5px;}
+  .stopline{border-left:3px solid var(--low);padding-left:12px;}
+  .btn{
+    font-family:var(--font-body);font-size:15px;font-weight:700;
+    width:100%;padding:13px;margin-top:16px;cursor:pointer;
+    background:var(--brand);color:#fff;border:none;border-radius:10px;
+  }
+  .btn.ghost{background:transparent;color:var(--brand-deep);border:1px solid var(--line);}
+  footer{
+    margin-top:26px;padding-top:16px;border-top:1px solid var(--line);
+    color:var(--ink-3);font-size:12.5px;
+  }
+  footer b{color:var(--ink-2);}
+  .method{font-size:12.5px;color:var(--ink-3);margin:14px 0 0;line-height:1.5;}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;}}
+</style>
+
+<div class="wrap">
+
+  <header class="mast">
+    <div class="mark" aria-hidden="true">MF</div>
+    <div>
+      <h1>Home Assessment &amp; Starter Plan</h1>
+      <p>No gym, no equipment. Bedroom, hallway, or a measured stretch outside.</p>
+    </div>
+  </header>
+
+  <section class="panel">
+    <p class="eyebrow">Step 1 · Him</p>
+    <h2>Basics</h2>
+    <p class="hint">Numbers below are an example — type his real results over them.</p>
+    <div class="row2">
+      <div class="field">
+        <label for="age">Age (years)</label>
+        <input type="number" id="age" value="16" min="10" max="19" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label for="height">Height (cm)</label>
+        <input type="number" id="height" value="170" min="120" max="210" inputmode="numeric">
+      </div>
+    </div>
+    <div class="field">
+      <label for="weight">Weight (kg)</label>
+      <input type="number" id="weight" value="88" min="30" max="200" inputmode="decimal">
+    </div>
+  </section>
+
+  <section class="panel">
+    <p class="eyebrow">Step 2 · One hard effort</p>
+    <h2>9-minute run</h2>
+    <p class="hint">Warm up first. Run 9 minutes as steady-hard as he can hold, then record it one of these ways.</p>
+    <div class="field">
+      <label id="runmode-label">How he recorded it</label>
+      <div class="seg" role="group" aria-labelledby="runmode-label" id="runmode">
+        <button type="button" data-mode="km" aria-pressed="true">Distance (km)</button>
+        <button type="button" data-mode="laps" aria-pressed="false">Laps</button>
+        <button type="button" data-mode="pace" aria-pressed="false">Pace (min/km)</button>
+      </div>
+    </div>
+    <div id="in-km">
+      <div class="field">
+        <label for="km">Distance covered in 9 minutes (km)</label>
+        <input type="number" id="km" value="1.55" step="0.01" min="0.3" max="4" inputmode="decimal">
+      </div>
+    </div>
+    <div id="in-laps" hidden>
+      <div class="row2">
+        <div class="field">
+          <label for="laps">Laps completed</label>
+          <input type="number" id="laps" value="4" step="0.25" min="0.5" max="60" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label for="laplen">Lap length (m)</label>
+          <input type="number" id="laplen" value="400" step="5" min="20" max="1000" inputmode="numeric">
+        </div>
+      </div>
+    </div>
+    <div id="in-pace" hidden>
+      <div class="field">
+        <label for="pace">Average pace (min/km)</label>
+        <input type="number" id="pace" value="5.8" step="0.1" min="3" max="15" inputmode="decimal">
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <p class="eyebrow">Step 3 · Muscle fatigue</p>
+    <h2>Three bodyweight tests</h2>
+    <p class="hint">Rest 2–3 minutes between tests. Stop each set the moment form breaks — near-failure, never true failure.</p>
+
+    <div class="field">
+      <label id="knees-label">Push-up style</label>
+      <div class="seg" role="group" aria-labelledby="knees-label" id="knees">
+        <button type="button" data-knees="0" aria-pressed="true">Full push-ups</button>
+        <button type="button" data-knees="1" aria-pressed="false">On knees</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="pushups">Push-up reps with good form</label>
+      <input type="number" id="pushups" value="9" min="0" max="200" inputmode="numeric">
+    </div>
+
+    <div class="field">
+      <label for="coretest">Core test</label>
+      <select id="coretest">
+        <option value="hollow" selected>Hollow hold — seconds</option>
+        <option value="curlup">Curl-ups / sit-ups — reps</option>
+        <option value="deadbug">Dead bugs — reps per side</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="coreval" id="coreval-label">Hollow hold result (seconds)</label>
+      <input type="number" id="coreval" value="22" min="0" max="600" inputmode="numeric">
+    </div>
+
+    <div class="field">
+      <label for="extratest">Extra fatigue test</label>
+      <select id="extratest">
+        <option value="wallsit" selected>Wall sit — seconds</option>
+        <option value="bridge">Glute bridge hold — seconds</option>
+        <option value="lunges">Walking lunges in place — total reps</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="extraval" id="extraval-label">Wall sit result (seconds)</label>
+      <input type="number" id="extraval" value="40" min="0" max="600" inputmode="numeric">
+    </div>
+  </section>
+
+  <div class="verdict" id="verdict">
+    <p class="eyebrow">Result</p>
+    <div class="level" id="levelName">Level 1 — Foundation<small id="levelSub"></small></div>
+    <dl class="scores">
+      <div class="score">
+        <dt>Est. VO<sub>2</sub> max</dt>
+        <dd id="vo2">32.1 <span>ml/kg/min</span></dd>
+        <span class="band b-low" id="vo2band">Needs improvement</span>
+      </div>
+      <div class="score">
+        <dt>Muscle endurance</dt>
+        <dd id="musc">6 <span>/ 12</span></dd>
+        <span class="band b-mid" id="muscband">Developing</span>
+      </div>
+    </dl>
+    <ul class="tally" id="tally"></ul>
+    <p class="method" id="method"></p>
+  </div>
+
+  <section class="panel">
+    <p class="eyebrow">3-week plan</p>
+    <h2 id="planTitle">His week</h2>
+    <p class="hint" id="planHint"></p>
+    <div class="schedule" id="schedule"></div>
+
+    <div class="weeks" role="group" aria-label="Choose week" id="weeks" style="margin-top:16px;">
+      <button type="button" data-week="1" aria-pressed="true">Week 1</button>
+      <button type="button" data-week="2" aria-pressed="false">Week 2</button>
+      <button type="button" data-week="3" aria-pressed="false">Week 3</button>
+    </div>
+    <p class="circuit" id="circuit"></p>
+    <ul class="exlist" id="exlist"></ul>
+    <button class="btn" id="copyBtn" type="button">Copy this week for him</button>
+  </section>
+
+  <section class="panel notes">
+    <p class="eyebrow">Coach notes</p>
+    <h2>Send this with the plan</h2>
+
+    <h3>Warm up — 5 minutes, every session</h3>
+    <ul>
+      <li>1 min marching or walking on the spot</li>
+      <li>10 arm circles each way, 10 shoulder rolls</li>
+      <li>10 slow bodyweight squats — movement only, no load</li>
+      <li>10 hip swings each leg, then 20s easy jog on the spot</li>
+      <li>Run days: add 1 minute of easy jogging before the clock starts</li>
+    </ul>
+
+    <h3>When to stop</h3>
+    <ul class="stopline">
+      <li>Stop the <b>set</b> the moment form breaks — hips sagging, back arching, neck straining. A clean 8 beats a messy 15.</li>
+      <li>Stop the <b>session</b> for chest pain, dizziness, sharp joint pain, or breath you can't catch. Message me the same day.</li>
+      <li>Sore for a day or two is normal. Sore past 3 days means we did too much — tell me and we cut the next session back.</li>
+    </ul>
+
+    <h3>About the numbers</h3>
+    <ul>
+      <li>The VO<sub>2</sub> max figure is an <b>estimate</b> from a running test, not a lab result, and it's calculated on the low side on purpose. It's a starting line to beat, not a grade.</li>
+      <li>Bodyweight scores are compared to <b>his own</b> last test — nobody else's.</li>
+      <li>The all-out 9-minute run happens <b>once</b>. Every other run is talking pace: if he can't say a full sentence, he slows down.</li>
+      <li>Re-test everything at the end of week 4, not sooner.</li>
+    </ul>
+    <button class="btn ghost" id="copyNotes" type="button">Copy coach notes</button>
+  </section>
+
+  <footer>
+    <b>Method.</b> VO<sub>2</sub> max uses the Cooper 12-minute run formula,
+    <span style="white-space:nowrap;">(metres − 504.9) ÷ 44.73</span>, applied to the 9-minute distance
+    scaled up by ×1.28 rather than the naive ×1.33 (pace always fades over the extra 3 minutes),
+    then 1.0 ml/kg/min is subtracted as a youth pacing margin. Categories follow the FITNESSGRAM
+    Healthy Fitness Zone for 16-year-old boys. Working sets are set at 50–60% of near-failure test
+    reps, so no session is trained to failure. Estimates for coaching, not medical screening.
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* ---------- test definitions (bands: [threshold, points], high to low) ---------- */
+var CORE = {
+  hollow:  {label:"Hollow hold",      unit:"seconds",       short:"s",  bands:[[45,4],[30,3],[15,2]], step:5, cue:"Low back flat on the floor"},
+  curlup:  {label:"Curl-ups",         unit:"reps",          short:"reps", bands:[[40,4],[25,3],[15,2]], step:2, cue:"Slow up, slower down"},
+  deadbug: {label:"Dead bugs",        unit:"reps per side", short:"/side", bands:[[25,4],[15,3],[8,2]],  step:2, cue:"Ribs down, breathe out on the reach"}
+};
+var EXTRA = {
+  wallsit: {label:"Wall sit",         unit:"seconds", short:"s",    bands:[[75,4],[45,3],[20,2]], step:5, cue:"Thighs parallel, back flat to the wall"},
+  bridge:  {label:"Glute bridge hold",unit:"seconds", short:"s",    bands:[[75,4],[45,3],[20,2]], step:5, cue:"Squeeze the glutes, don't arch the back"},
+  lunges:  {label:"Walking lunges in place", unit:"total reps", short:"reps", bands:[[35,4],[20,3],[10,2]], step:2, cue:"Front knee tracks over the foot"}
+};
+
+var LEVELS = {
+  1:{name:"Foundation", strength:2, runs:2, sets:2, frac:0.50,
+     days:["Strength","Rest / walk","Easy run","Rest","Strength","Easy run","Full rest"]},
+  2:{name:"Build",      strength:3, runs:2, sets:3, frac:0.55,
+     days:["Strength","Easy run","Strength","Rest / walk","Strength","Easy run","Full rest"]},
+  3:{name:"Progress",   strength:3, runs:3, sets:3, frac:0.60,
+     days:["Strength","Easy run","Strength","Easy run","Strength","Easy run","Full rest"]}
+};
+var DAYNAMES = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+/* ---------- maths ---------- */
+var SCALE_9_TO_12 = 1.28;   // 9-min distance -> 12-min equivalent (fade-adjusted)
+var YOUTH_MARGIN  = 1.0;    // ml/kg/min removed, keeps the estimate conservative
+
+function vo2FromMetres(m){
+  var v = (m * SCALE_9_TO_12 - 504.9) / 44.73 - YOUTH_MARGIN;
+  return v > 0 ? v : 0;
+}
+function vo2Category(v){
+  if (v >= 48)   return {text:"Strong for his age", pts:4, cls:"b-good"};
+  if (v >= 44)   return {text:"Above the healthy zone", pts:3, cls:"b-good"};
+  if (v >= 41.8) return {text:"Healthy Fitness Zone", pts:3, cls:"b-good"};
+  if (v >= 38.9) return {text:"Close to the zone", pts:2, cls:"b-mid"};
+  return {text:"Build the base first", pts:1, cls:"b-low"};
+}
+function scoreBands(value, bands){
+  for (var i=0;i<bands.length;i++){ if (value >= bands[i][0]) return bands[i][1]; }
+  return 1;
+}
+function scorePushups(reps, knees){
+  return scoreBands(reps, knees ? [[25,4],[15,3],[8,2]] : [[20,4],[10,3],[5,2]]);
+}
+function enduranceRating(total){
+  if (total >= 10) return {text:"Fatigues late", cls:"b-good"};
+  if (total >= 8)  return {text:"Solid base", cls:"b-good"};
+  if (total >= 5)  return {text:"Developing", cls:"b-mid"};
+  return {text:"Fatigues early", cls:"b-low"};
+}
+function dose(testResult, frac, week, step, min){
+  var base = Math.max(Math.floor(testResult * frac), min || 3);
+  return base + step * (week - 1);
+}
+
+/* ---------- state ---------- */
+var runMode = "km", onKnees = false, week = 1, current = null;
+
+function num(id){ var v = parseFloat(document.getElementById(id).value); return isFinite(v) ? v : 0; }
+
+function runMetres(){
+  if (runMode === "km")   return num("km") * 1000;
+  if (runMode === "laps") return num("laps") * num("laplen");
+  var p = num("pace");
+  return p > 0 ? (9 / p) * 1000 : 0;
+}
+
+function compute(){
+  var metres = runMetres();
+  var vo2 = vo2FromMetres(metres);
+  var cat = vo2Category(vo2);
+
+  var pushReps = num("pushups");
+  var pushPts  = scorePushups(pushReps, onKnees);
+  var coreKey  = document.getElementById("coretest").value;
+  var coreVal  = num("coreval");
+  var corePts  = scoreBands(coreVal, CORE[coreKey].bands);
+  var extraKey = document.getElementById("extratest").value;
+  var extraVal = num("extraval");
+  var extraPts = scoreBands(extraVal, EXTRA[extraKey].bands);
+
+  var muscleTotal = pushPts + corePts + extraPts;
+  var overall = (cat.pts + muscleTotal / 3) / 2;
+  var level = overall >= 3 ? 3 : (overall >= 2 ? 2 : 1);
+
+  return {metres:metres, vo2:vo2, cat:cat, pushReps:pushReps, pushPts:pushPts,
+          coreKey:coreKey, coreVal:coreVal, corePts:corePts,
+          extraKey:extraKey, extraVal:extraVal, extraPts:extraPts,
+          muscleTotal:muscleTotal, overall:overall, level:level};
+}
+
+/* ---------- rendering ---------- */
+function pips(n){
+  var out = "";
+  for (var i=1;i<=4;i++) out += '<span class="pip' + (i<=n ? ' on':'') + '"></span>';
+  return '<span class="pips" role="img" aria-label="' + n + ' out of 4">' + out + '</span>';
+}
+
+function renderResult(r){
+  var lv = LEVELS[r.level];
+  document.getElementById("levelName").innerHTML =
+    "Level " + r.level + " — " + lv.name +
+    '<small>' + lv.strength + " strength days · " + lv.runs +
+    " easy runs · combined score " + r.overall.toFixed(1) + "/4</small>";
+
+  document.getElementById("vo2").innerHTML = r.vo2.toFixed(1) + ' <span>ml/kg/min</span>';
+  var vb = document.getElementById("vo2band");
+  vb.textContent = r.cat.text; vb.className = "band " + r.cat.cls;
+
+  document.getElementById("musc").innerHTML = r.muscleTotal + ' <span>/ 12</span>';
+  var er = enduranceRating(r.muscleTotal);
+  var mb = document.getElementById("muscband");
+  mb.textContent = er.text; mb.className = "band " + er.cls;
+
+  var core = CORE[r.coreKey], extra = EXTRA[r.extraKey];
+  var rows = [
+    ["9-min run", Math.round(r.metres) + " m", r.cat.pts],
+    ["Push-ups" + (onKnees ? " (knees)" : ""), r.pushReps + " reps", r.pushPts],
+    [core.label, r.coreVal + " " + core.short, r.corePts],
+    [extra.label, r.extraVal + " " + extra.short, r.extraPts]
+  ];
+  document.getElementById("tally").innerHTML = rows.map(function(row){
+    return '<li><span class="name">' + row[0] + '</span><span class="val">' +
+           row[1] + '</span>' + pips(row[2]) + '</li>';
+  }).join("");
+
+  document.getElementById("method").innerHTML =
+    "Cooper 12-min formula on a ×1.28 scaled 9-min distance, less a 1.0 youth margin. " +
+    "Each test scored 1–4 against 16-year-old bands.";
+}
+
+function renderSchedule(r){
+  var lv = LEVELS[r.level];
+  document.getElementById("planTitle").textContent = "Level " + r.level + " week — " + lv.name;
+  document.getElementById("planHint").textContent =
+    "Never two hard days back to back, and at least one full rest day. Same movements he was tested on, so progress is obvious.";
+  document.getElementById("schedule").innerHTML = lv.days.map(function(d,i){
+    var cls = d === "Strength" ? "strength" : (d === "Easy run" ? "run" : "");
+    var shortD = {"Strength":"Str","Easy run":"Run","Rest / walk":"Walk","Rest":"Rest","Full rest":"Off"}[d] || d;
+    return '<div class="day ' + cls + '"><b>' + DAYNAMES[i] + '</b><span>' + shortD + '</span></div>';
+  }).join("");
+}
+
+function weekPlan(r, w){
+  var lv = LEVELS[r.level], core = CORE[r.coreKey], extra = EXTRA[r.extraKey];
+  return {
+    sets: lv.sets,
+    push: dose(r.pushReps, lv.frac, w, 1, 3),
+    core: dose(r.coreVal, lv.frac, w, core.step, core.step === 5 ? 8 : 4),
+    extra: dose(r.extraVal, lv.frac, w, extra.step, extra.step === 5 ? 10 : 4),
+    run: Math.round(r.metres + 100 * (w - 1))
+  };
+}
+
+function renderWeek(r){
+  var lv = LEVELS[r.level], core = CORE[r.coreKey], extra = EXTRA[r.extraKey];
+  var p = weekPlan(r, week);
+
+  document.getElementById("circuit").innerHTML =
+    "<b>Strength day:</b> run the circuit <b>" + p.sets + "×</b>, 90 seconds rest between rounds. " +
+    "These doses sit around half of his test score — he should finish able, not wrecked.";
+
+  var items = [
+    ["Push-ups" + (onKnees ? " (knees)" : ""), "Chest to a fist off the floor", p.push + " reps"],
+    [core.label, core.cue, p.core + " " + core.short],
+    [extra.label, extra.cue, p.extra + " " + extra.short],
+    ["Bodyweight squats", "Free add-on, no load", "10–12 reps"],
+    ["Run day", "Talking pace. Walking 30–60s still counts.", "9 min · ~" + p.run + " m"]
+  ];
+  document.getElementById("exlist").innerHTML = items.map(function(it){
+    return '<li><span class="ex">' + it[0] + '<em>' + it[1] + '</em></span>' +
+           '<span class="dose">' + it[2] + '</span></li>';
+  }).join("");
+}
+
+function weekText(r){
+  var lv = LEVELS[r.level], core = CORE[r.coreKey], extra = EXTRA[r.extraKey];
+  var p = weekPlan(r, week);
+  return [
+    "WEEK " + week + " — Level " + r.level + " (" + lv.name + ")",
+    "Warm up 5 min first. Stop any set when form breaks.",
+    "",
+    "Strength day (" + lv.strength + "× this week) — circuit " + p.sets + "×, 90s rest:",
+    "  • Push-ups" + (onKnees ? " (knees)" : "") + ": " + p.push + " reps",
+    "  • " + core.label + ": " + p.core + " " + core.unit,
+    "  • " + extra.label + ": " + p.extra + " " + extra.unit,
+    "  • Bodyweight squats: 10–12 reps",
+    "",
+    "Run day (" + lv.runs + "× this week): 9 minutes easy, target ~" + p.run + " m.",
+    "Talking pace — if you can't say a full sentence, slow down. Walking 30–60s counts.",
+    "",
+    "Week shape: " + DAYNAMES.map(function(d,i){ return d + " " + lv.days[i]; }).join(" | ")
+  ].join("\n");
+}
+
+function notesText(){
+  var clone = document.querySelector(".notes").cloneNode(true);
+  Array.prototype.forEach.call(clone.querySelectorAll("button, .eyebrow"), function(el){
+    el.parentNode.removeChild(el);
+  });
+  return clone.innerText.replace(/\n{3,}/g, "\n\n").trim();
+}
+
+function copy(text, btn, done){
+  var original = btn.textContent;
+  function ok(){ btn.textContent = done; setTimeout(function(){ btn.textContent = original; }, 1800); }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(ok, function(){ fallback(); });
+  } else { fallback(); }
+  function fallback(){
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", "");
+    ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); ok(); }
+    catch (e) { btn.textContent = "Press and hold to copy above"; setTimeout(function(){ btn.textContent = original; }, 2400); }
+    document.body.removeChild(ta);
+  }
+}
+
+function refresh(){
+  current = compute();
+  renderResult(current);
+  renderSchedule(current);
+  renderWeek(current);
+}
+
+/* ---------- wiring ---------- */
+document.getElementById("runmode").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if (!b) return;
+  runMode = b.dataset.mode;
+  Array.prototype.forEach.call(this.querySelectorAll("button"), function(x){
+    x.setAttribute("aria-pressed", String(x === b));
+  });
+  document.getElementById("in-km").hidden   = runMode !== "km";
+  document.getElementById("in-laps").hidden = runMode !== "laps";
+  document.getElementById("in-pace").hidden = runMode !== "pace";
+  refresh();
+});
+
+document.getElementById("knees").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if (!b) return;
+  onKnees = b.dataset.knees === "1";
+  Array.prototype.forEach.call(this.querySelectorAll("button"), function(x){
+    x.setAttribute("aria-pressed", String(x === b));
+  });
+  refresh();
+});
+
+document.getElementById("weeks").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if (!b) return;
+  week = parseInt(b.dataset.week, 10);
+  Array.prototype.forEach.call(this.querySelectorAll("button"), function(x){
+    x.setAttribute("aria-pressed", String(x === b));
+  });
+  renderWeek(current);
+});
+
+document.getElementById("coretest").addEventListener("change", function(){
+  var c = CORE[this.value];
+  document.getElementById("coreval-label").textContent = c.label + " result (" + c.unit + ")";
+  refresh();
+});
+document.getElementById("extratest").addEventListener("change", function(){
+  var x = EXTRA[this.value];
+  document.getElementById("extraval-label").textContent = x.label + " result (" + x.unit + ")";
+  refresh();
+});
+
+Array.prototype.forEach.call(document.querySelectorAll('input[type="number"]'), function(el){
+  el.addEventListener("input", refresh);
+});
+
+document.getElementById("copyBtn").addEventListener("click", function(){
+  copy(weekText(current), this, "Copied ✓");
+});
+document.getElementById("copyNotes").addEventListener("click", function(){
+  copy(notesText(), this, "Copied ✓");
+});
+
+refresh();
+</script>
